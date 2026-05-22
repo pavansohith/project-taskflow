@@ -4,13 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  LayoutDashboard,
-  PanelLeftClose,
-  Settings,
-  User,
-} from "lucide-react";
-import { fadeOverlay, slideInRight } from "@/lib/motion";
+import { LayoutDashboard, Settings, User, X } from "lucide-react";
+import { fadeOverlay, slideInLeft } from "@/lib/motion";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -50,24 +45,26 @@ function SidebarPanel({
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-border bg-bg-surface transition-[width] duration-200",
-        collapsed ? "w-[56px]" : "w-[220px]"
+        "flex h-full flex-col border-r border-border bg-bg-surface",
+        showClose ? "w-[min(280px,85vw)]" : "transition-[width] duration-200",
+        !showClose && (collapsed ? "w-[56px]" : "w-[220px]")
       )}
     >
       {showClose && (
-        <div className="flex shrink-0 justify-end px-3 pt-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+          <span className="text-sm font-semibold text-text-primary">Menu</span>
           <button
             type="button"
             onClick={onMobileClose}
             className="flex h-9 w-9 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text-primary"
             aria-label="Close menu"
           >
-            <PanelLeftClose className="h-5 w-5" strokeWidth={1.5} />
+            <X className="h-5 w-5" strokeWidth={1.5} />
           </button>
         </div>
       )}
 
-      <nav className={cn("flex-1 px-3", showClose ? "pt-2" : "pt-5")}>
+      <nav className={cn("flex-1 px-3", showClose ? "pt-4" : "pt-5")}>
         {!collapsed && (
           <p className="mb-2 px-3 text-[10px] font-semibold tracking-[0.15em] text-text-muted uppercase">
             Navigation
@@ -152,32 +149,34 @@ export function Sidebar({
         <SidebarPanel collapsed={effectiveCollapsed} />
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {mobileOpen && (
           <>
-            <motion.button
-              type="button"
+            <motion.div
+              key="overlay"
               variants={fadeOverlay}
               initial="initial"
               animate="animate"
               exit="exit"
               className="fixed inset-0 z-40 bg-[var(--overlay)] lg:hidden"
-              aria-label="Close menu overlay"
+              aria-hidden
               onClick={onMobileClose}
             />
-            <motion.div
-              variants={slideInRight}
+            <motion.aside
+              key="drawer"
+              variants={slideInLeft}
               initial="initial"
               animate="animate"
               exit="exit"
-              className="fixed inset-y-0 left-0 z-50 lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 will-change-transform lg:hidden"
+              style={{ WebkitOverflowScrolling: "touch" }}
             >
               <SidebarPanel
                 collapsed={false}
                 onMobileClose={onMobileClose}
                 showClose
               />
-            </motion.div>
+            </motion.aside>
           </>
         )}
       </AnimatePresence>

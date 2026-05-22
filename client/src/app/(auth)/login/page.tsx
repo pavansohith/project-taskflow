@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { AuthMobileLogo } from "@/components/auth/AuthMobileLogo";
 import { Button } from "@/components/ui/Button";
@@ -13,15 +12,15 @@ import { FormErrorBanner } from "@/components/ui/FormErrorBanner";
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/hooks/useAuth";
-import { fadeInUp } from "@/lib/motion";
 import { getErrorMessage } from "@/lib/errors";
+import { cn } from "@/lib/utils";
 import { loginSchema, type LoginFormValues } from "@/lib/validators";
 
 const authFormShell =
   "[&_label]:text-sm [&_label]:font-medium [&_label]:text-white/70";
 
 const authInputClass =
-  "h-10 rounded-md border-[#1f2d45] bg-[#0a0f1e] text-sm text-white placeholder:text-white/30 focus:border-indigo-500 focus:ring-0 focus:outline-none";
+  "h-11 rounded-md border-[#1f2d45] bg-[#0a0f1e] text-base text-white placeholder:text-white/30 focus:border-indigo-500 focus:ring-0 focus:outline-none sm:h-10 sm:text-sm";
 
 function LoginForm() {
   const { login } = useAuth();
@@ -53,11 +52,8 @@ function LoginForm() {
   };
 
   return (
-    <motion.div
-      variants={fadeInUp}
-      initial="initial"
-      animate="animate"
-      className={`w-full max-w-sm rounded-xl border border-[#1f2d45] bg-[#111827] p-8 ${authFormShell}`}
+    <div
+      className={`w-full max-w-sm rounded-xl border border-[#1f2d45] bg-[#111827] p-6 sm:p-8 ${authFormShell}`}
     >
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Welcome back</h1>
@@ -72,11 +68,12 @@ function LoginForm() {
         </div>
       )}
 
-      <motion.form
+      <form
         onSubmit={handleSubmit(onSubmit)}
-        animate={submitError ? { x: [0, -8, 8, -6, 6, 0] } : {}}
-        transition={{ duration: 0.4 }}
-        className="flex flex-col gap-5"
+        className={cn(
+          "flex flex-col gap-5",
+          submitError && "animate-modal-shake"
+        )}
       >
         <Input
           label="Email"
@@ -115,27 +112,20 @@ function LoginForm() {
 
         <Button
           type="submit"
-          className="h-10 w-full rounded-md bg-indigo-600 text-sm font-semibold shadow-none hover:bg-indigo-500"
+          className="h-11 w-full rounded-md bg-indigo-600 text-base font-semibold shadow-none hover:bg-indigo-500 sm:h-10 sm:text-sm"
           isLoading={isSubmitting && !success}
           disabled={success}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            {success ? (
-              <motion.span
-                key="success"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="inline-flex items-center gap-2"
-              >
-                <Check className="h-4 w-4" />
-                Signed in!
-              </motion.span>
-            ) : (
-              <motion.span key="default">
-                {isSubmitting ? "Signing in..." : "Sign in"}
-              </motion.span>
-            )}
-          </AnimatePresence>
+          {success ? (
+            <span className="inline-flex items-center gap-2">
+              <Check className="h-4 w-4" />
+              Signed in!
+            </span>
+          ) : isSubmitting ? (
+            "Signing in..."
+          ) : (
+            "Sign in"
+          )}
         </Button>
 
         <p className="text-center text-sm text-white/50">
@@ -147,8 +137,8 @@ function LoginForm() {
             Register
           </Link>
         </p>
-      </motion.form>
-    </motion.div>
+      </form>
+    </div>
   );
 }
 

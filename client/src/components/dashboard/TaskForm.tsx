@@ -9,9 +9,10 @@ import { appToast } from "@/lib/toast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
-import { fadeOverlay, scaleIn } from "@/lib/motion";
+import { fadeOverlay, scaleIn, slideInUp } from "@/lib/motion";
 import { FormErrorBanner } from "@/components/ui/FormErrorBanner";
 import { getErrorMessage } from "@/lib/errors";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { taskSchema, type TaskFormValues } from "@/lib/validators";
 import { getDefaultPriority } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
@@ -42,20 +43,17 @@ const priorityOptions: {
   {
     value: "Low",
     label: "Low",
-    activeClassName:
-      "bg-slate-600 text-white dark:bg-slate-500",
+    activeClassName: "bg-slate-600 text-white dark:bg-slate-500",
   },
   {
     value: "Medium",
     label: "Medium",
-    activeClassName:
-      "bg-warning-500 text-white",
+    activeClassName: "bg-warning-500 text-white",
   },
   {
     value: "High",
     label: "High",
-    activeClassName:
-      "bg-danger-500 text-white",
+    activeClassName: "bg-danger-500 text-white",
   },
 ];
 
@@ -67,25 +65,22 @@ const statusOptions: {
   {
     value: "Todo",
     label: "Todo",
-    activeClassName:
-      "bg-slate-600 text-white dark:bg-slate-500",
+    activeClassName: "bg-slate-600 text-white dark:bg-slate-500",
   },
   {
     value: "In Progress",
     label: "In Progress",
-    activeClassName:
-      "bg-primary-600 text-white",
+    activeClassName: "bg-primary-600 text-white",
   },
   {
     value: "Completed",
     label: "Done",
-    activeClassName:
-      "bg-success-600 text-white",
+    activeClassName: "bg-success-600 text-white",
   },
 ];
 
 const dateInputClass =
-  "h-11 w-full rounded-lg border border-border bg-bg-surface px-3 text-sm text-text-primary transition-ring focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 disabled:cursor-not-allowed disabled:opacity-50 [color-scheme:light] dark:[color-scheme:dark]";
+  "h-11 w-full rounded-lg border border-border bg-bg-surface px-3 text-base text-text-primary transition-ring focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 disabled:cursor-not-allowed disabled:opacity-50 [color-scheme:light] dark:[color-scheme:dark] sm:text-sm";
 
 function toDateInputValue(dueDate?: string): string {
   if (!dueDate) return "";
@@ -112,27 +107,32 @@ export function TaskForm({
   updateTask,
 }: TaskFormProps) {
   const isEditMode = Boolean(task);
+  const isMobile = useMediaQuery("(max-width: 1023px)");
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [descLength, setDescLength] = useState(
+    () => task?.description?.length ?? 0
+  );
 
   const {
     register,
     handleSubmit,
     reset,
     control,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: getDefaultValues(task),
   });
 
-  const descriptionValue = watch("description") ?? "";
+  const descriptionRegister = register("description");
 
   useEffect(() => {
-    reset(getDefaultValues(task));
+    const defaults = getDefaultValues(task);
+    reset(defaults);
+    setDescLength(defaults.description?.length ?? 0);
   }, [task, reset]);
 
   const requestClose = useCallback(() => {
@@ -217,11 +217,13 @@ export function TaskForm({
     }
   };
 
+  const panelVariants = isMobile ? slideInUp : scaleIn;
+
   return (
     <AnimatePresence onExitComplete={handleExitComplete}>
       {isVisible && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-4"
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
           role="presentation"
         >
           <motion.button
@@ -230,7 +232,7 @@ export function TaskForm({
             initial="initial"
             animate="animate"
             exit="exit"
-            className="absolute inset-0 bg-[var(--overlay)] backdrop-blur-md"
+            className="absolute inset-0 bg-[var(--overlay)]"
             onClick={requestClose}
             aria-label="Close dialog"
           />
@@ -240,24 +242,27 @@ export function TaskForm({
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            variants={scaleIn}
+            variants={panelVariants}
             initial="initial"
             animate="animate"
             exit="exit"
             className={cn(
-              "relative z-10 flex w-full max-h-[92vh] max-w-lg flex-col overflow-hidden rounded-t-xl border border-border bg-bg-surface shadow-[var(--shadow-modal)] max-md:max-w-none md:max-h-[90vh] md:rounded-xl"
+              "mobile-gpu relative z-10 flex w-full flex-col overflow-hidden border border-border bg-bg-surface shadow-[var(--shadow-modal)]",
+              "max-h-[min(92dvh,92vh)] rounded-t-2xl sm:max-h-[min(90dvh,90vh)] sm:max-w-lg sm:rounded-xl"
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Gradient header */}
-            <div className="flex shrink-0 items-center justify-between bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 px-6 py-4">
-              <h2 id={titleId} className="text-lg font-semibold text-white">
+            <div className="flex shrink-0 items-center justify-between bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 px-4 py-3.5 sm:px-6 sm:py-4">
+              <h2
+                id={titleId}
+                className="text-base font-semibold text-white sm:text-lg"
+              >
                 {isEditMode ? "Edit Task" : "Create Task"}
               </h2>
               <button
                 type="button"
                 onClick={requestClose}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-white/90 transition-colors hover:bg-white/15"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-white/90 hover:bg-white/15"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
@@ -266,15 +271,15 @@ export function TaskForm({
 
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="flex max-h-[calc(92vh-4rem)] flex-col overflow-y-auto"
+              className="flex min-h-0 flex-1 flex-col"
             >
-              <div className="space-y-6 p-6">
-                {/* Basics */}
+              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4 sm:space-y-6 sm:p-6">
                 <section className="space-y-4">
                   <Input
                     label="Title"
                     error={errors.title?.message}
                     disabled={isSubmitting}
+                    className="text-base sm:text-sm"
                     {...register("title")}
                   />
 
@@ -287,15 +292,21 @@ export function TaskForm({
                     </label>
                     <textarea
                       id="task-description"
-                      rows={4}
+                      rows={3}
                       maxLength={DESCRIPTION_MAX}
                       disabled={isSubmitting}
                       placeholder="Optional details..."
                       className={cn(
-                        "w-full resize-none rounded-lg border border-border bg-bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted transition-ring",
+                        "w-full resize-none rounded-lg border border-border bg-bg-surface px-3 py-2.5 text-base text-text-primary placeholder:text-text-muted transition-ring sm:py-2 sm:text-sm",
                         "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 disabled:opacity-50"
                       )}
-                      {...register("description")}
+                      name={descriptionRegister.name}
+                      ref={descriptionRegister.ref}
+                      onBlur={descriptionRegister.onBlur}
+                      onChange={(e) => {
+                        setDescLength(e.target.value.length);
+                        void descriptionRegister.onChange(e);
+                      }}
                     />
                     <div className="flex items-center justify-between gap-2">
                       {errors.description?.message ? (
@@ -306,7 +317,7 @@ export function TaskForm({
                         <span />
                       )}
                       <p className="text-xs text-text-muted">
-                        {descriptionValue.length} / {DESCRIPTION_MAX}
+                        {descLength} / {DESCRIPTION_MAX}
                       </p>
                     </div>
                   </div>
@@ -314,7 +325,6 @@ export function TaskForm({
 
                 <hr className="border-border" />
 
-                {/* Priority & status */}
                 <section className="space-y-4">
                   <div>
                     <p className="text-label mb-3">Priority</p>
@@ -351,7 +361,6 @@ export function TaskForm({
 
                 <hr className="border-border" />
 
-                {/* Due date */}
                 <section>
                   <label
                     htmlFor="task-due-date"
@@ -374,7 +383,9 @@ export function TaskForm({
                 </section>
               </div>
 
-              <div className="shrink-0 space-y-2 border-t border-border bg-bg-elevated/50 p-6">
+              <div
+                className="shrink-0 space-y-2 border-t border-border bg-bg-elevated/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6"
+              >
                 <FormErrorBanner message={submitError} />
                 <Button
                   type="submit"

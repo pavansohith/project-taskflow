@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { format } from "date-fns";
 import {
   CalendarDays,
@@ -37,7 +38,7 @@ function DashboardSectionHeading({ title }: { title: string }) {
       <span className="shrink-0 text-xs font-semibold tracking-[0.12em] text-text-muted uppercase">
         {title}
       </span>
-      <div className="h-px flex-1 bg-white/5" />
+      <div className="h-px flex-1 bg-border-subtle" />
     </div>
   );
 }
@@ -188,9 +189,115 @@ export default function DashboardPage() {
   }, [editingTask, handleCloseForm, refetch, refetchActivity]);
 
   const statsSharedError = statsError;
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+
+  const statsCards = (
+    <>
+      <StatsCard
+        className="h-full"
+        title="Total"
+        value={stats.total}
+        icon={ListTodo}
+        variant="indigo"
+        trend={totalTrend}
+        isLoading={statsLoading}
+        error={statsSharedError}
+        onRetry={() => void refetch(false)}
+        celebrate={celebrateTotal}
+      />
+      <StatsCard
+        className="h-full"
+        title="Completed"
+        value={stats.completed}
+        icon={CheckCircle2}
+        variant="emerald"
+        trend={completedTrend}
+        isLoading={statsLoading}
+        error={statsSharedError}
+        onRetry={() => void refetch(false)}
+      />
+      <StatsCard
+        className="h-full"
+        title="Pending"
+        value={stats.pending}
+        icon={Circle}
+        variant="amber"
+        trend={pollTrend}
+        isLoading={statsLoading}
+        error={statsSharedError}
+        onRetry={() => void refetch(false)}
+      />
+      <StatsCard
+        className="h-full"
+        title="In Progress"
+        value={stats.inProgress}
+        icon={Clock}
+        variant="violet"
+        trend={pollTrend}
+        isLoading={statsLoading}
+        error={statsSharedError}
+        onRetry={() => void refetch(false)}
+      />
+    </>
+  );
+
+  const taskListContent = (
+    <>
+      {isError && errorMessage ? (
+        <div className="px-4 py-8 sm:px-5">
+          <ErrorState
+            title="Unable to load tasks"
+            message={errorMessage}
+            onRetry={retry}
+            compact
+          />
+        </div>
+      ) : isLoading ? (
+        isSlowLoading ? (
+          <SlowLoadingState
+            onCancel={cancelLoading}
+            onKeepWaiting={dismissSlowLoading}
+          />
+        ) : (
+          <TaskListSkeleton rows={5} />
+        )
+      ) : isEmpty ? (
+        <div className="px-4 py-8 sm:px-5">
+          <EmptyState
+            title={hasActiveFilters ? "No matching tasks" : "No tasks yet"}
+            description={
+              hasActiveFilters
+                ? "Try adjusting your search or filters."
+                : "Create your first task to get started."
+            }
+            actionLabel={hasActiveFilters ? undefined : "Create task"}
+            onAction={hasActiveFilters ? undefined : handleOpenCreate}
+          />
+        </div>
+      ) : (
+        <>
+          <TaskTable
+            embedded
+            tasks={tasks}
+            onEdit={handleOpenEdit}
+            onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
+            isUpdatingId={updatingId}
+          />
+          <Pagination
+            embedded
+            page={currentPage}
+            totalPages={totalPages}
+            total={total}
+            onPageChange={setPage}
+          />
+        </>
+      )}
+    </>
+  );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
@@ -212,74 +319,73 @@ export default function DashboardPage() {
 
       <section>
         <DashboardSectionHeading title="Overview" />
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          <motion.div variants={staggerItem} className="h-full">
-            <StatsCard
-              className="h-full"
-              title="Total"
-              value={stats.total}
-              icon={ListTodo}
-              variant="indigo"
-              trend={totalTrend}
-              isLoading={statsLoading}
-              error={statsSharedError}
-              onRetry={() => void refetch(false)}
-              celebrate={celebrateTotal}
-            />
+        {isMobile ? (
+          <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
+            {statsCards}
+          </div>
+        ) : (
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          >
+            <motion.div variants={staggerItem} className="h-full">
+              <StatsCard
+                className="h-full"
+                title="Total"
+                value={stats.total}
+                icon={ListTodo}
+                variant="indigo"
+                trend={totalTrend}
+                isLoading={statsLoading}
+                error={statsSharedError}
+                onRetry={() => void refetch(false)}
+                celebrate={celebrateTotal}
+              />
+            </motion.div>
+            <motion.div variants={staggerItem} className="h-full">
+              <StatsCard
+                className="h-full"
+                title="Completed"
+                value={stats.completed}
+                icon={CheckCircle2}
+                variant="emerald"
+                trend={completedTrend}
+                isLoading={statsLoading}
+                error={statsSharedError}
+                onRetry={() => void refetch(false)}
+              />
+            </motion.div>
+            <motion.div variants={staggerItem} className="h-full">
+              <StatsCard
+                className="h-full"
+                title="Pending"
+                value={stats.pending}
+                icon={Circle}
+                variant="amber"
+                trend={pollTrend}
+                isLoading={statsLoading}
+                error={statsSharedError}
+                onRetry={() => void refetch(false)}
+              />
+            </motion.div>
+            <motion.div variants={staggerItem} className="h-full">
+              <StatsCard
+                className="h-full"
+                title="In Progress"
+                value={stats.inProgress}
+                icon={Clock}
+                variant="violet"
+                trend={pollTrend}
+                isLoading={statsLoading}
+                error={statsSharedError}
+                onRetry={() => void refetch(false)}
+              />
+            </motion.div>
           </motion.div>
-          <motion.div variants={staggerItem} className="h-full">
-            <StatsCard
-              className="h-full"
-              title="Completed"
-              value={stats.completed}
-              icon={CheckCircle2}
-              variant="emerald"
-              trend={completedTrend}
-              isLoading={statsLoading}
-              error={statsSharedError}
-              onRetry={() => void refetch(false)}
-            />
-          </motion.div>
-          <motion.div variants={staggerItem} className="h-full">
-            <StatsCard
-              className="h-full"
-              title="Pending"
-              value={stats.pending}
-              icon={Circle}
-              variant="amber"
-              trend={pollTrend}
-              isLoading={statsLoading}
-              error={statsSharedError}
-              onRetry={() => void refetch(false)}
-            />
-          </motion.div>
-          <motion.div variants={staggerItem} className="h-full">
-            <StatsCard
-              className="h-full"
-              title="In Progress"
-              value={stats.inProgress}
-              icon={Clock}
-              variant="violet"
-              trend={pollTrend}
-              isLoading={statsLoading}
-              error={statsSharedError}
-              onRetry={() => void refetch(false)}
-            />
-          </motion.div>
-        </motion.div>
+        )}
       </section>
-
-      <RecentActivity
-        activity={activity}
-        isLoading={activityLoading}
-        error={activityError}
-        onRetry={refetchActivity}
-      />
 
       <section>
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -315,65 +421,27 @@ export default function DashboardPage() {
             isLoading={isLoading}
           />
 
-          <motion.div
-            key={filterKey}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.15 }}
-          >
-            {isError && errorMessage ? (
-              <div className="px-5 py-8">
-                <ErrorState
-                  title="Unable to load tasks"
-                  message={errorMessage}
-                  onRetry={retry}
-                  compact
-                />
-              </div>
-            ) : isLoading ? (
-              isSlowLoading ? (
-                <SlowLoadingState
-                  onCancel={cancelLoading}
-                  onKeepWaiting={dismissSlowLoading}
-                />
-              ) : (
-                <TaskListSkeleton rows={5} />
-              )
-            ) : isEmpty ? (
-              <div className="px-5 py-8">
-                <EmptyState
-                  title={hasActiveFilters ? "No matching tasks" : "No tasks yet"}
-                  description={
-                    hasActiveFilters
-                      ? "Try adjusting your search or filters."
-                      : "Create your first task to get started."
-                  }
-                  actionLabel={hasActiveFilters ? undefined : "Create task"}
-                  onAction={hasActiveFilters ? undefined : handleOpenCreate}
-                />
-              </div>
-            ) : (
-              <>
-                <TaskTable
-                  embedded
-                  tasks={tasks}
-                  onEdit={handleOpenEdit}
-                  onDelete={handleDelete}
-                  onStatusChange={handleStatusChange}
-                  isUpdatingId={updatingId}
-                />
-                <Pagination
-                  embedded
-                  page={currentPage}
-                  totalPages={totalPages}
-                  total={total}
-                  onPageChange={setPage}
-                />
-              </>
-            )}
-          </motion.div>
+          {isMobile ? (
+            <div key={filterKey}>{taskListContent}</div>
+          ) : (
+            <motion.div
+              key={filterKey}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.15 }}
+            >
+              {taskListContent}
+            </motion.div>
+          )}
         </div>
       </section>
+
+      <RecentActivity
+        activity={activity}
+        isLoading={activityLoading}
+        error={activityError}
+        onRetry={refetchActivity}
+      />
 
       <AnimatePresence>
         {isFormOpen && (

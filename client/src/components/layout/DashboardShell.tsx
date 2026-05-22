@@ -19,9 +19,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [mobileOpen, closeMobile]);
 
@@ -40,9 +42,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         />
         <main
           data-dashboard-main
-          className="flex-1 overflow-x-hidden overflow-y-auto px-8 py-8"
+          className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
         >
-          <div className="w-full pb-8">
+          <div className="w-full pb-6 sm:pb-8">
             <DashboardPageTransition>{children}</DashboardPageTransition>
           </div>
         </main>

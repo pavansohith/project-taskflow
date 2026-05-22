@@ -1,7 +1,6 @@
 "use client";
 
 import { forwardRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { FieldError } from "@/components/ui/FieldError";
 import { cn } from "@/lib/utils";
@@ -34,7 +33,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             type={showPassword ? "text" : "password"}
             disabled={disabled}
             className={cn(
-              "h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-11 text-sm text-slate-900 placeholder:text-slate-400 transition-ring dark:border-border dark:bg-bg-surface dark:text-text-primary dark:placeholder:text-text-muted",
+              "h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-11 text-base text-slate-900 placeholder:text-slate-400 transition-ring dark:border-border dark:bg-bg-surface dark:text-text-primary dark:placeholder:text-text-muted sm:text-sm",
               "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50",
               "disabled:cursor-not-allowed disabled:opacity-50",
               error &&
@@ -51,31 +50,11 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             onClick={() => setShowPassword((v) => !v)}
             className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-text-muted transition-ring hover:bg-bg-elevated hover:text-text-primary"
           >
-            <AnimatePresence mode="wait" initial={false}>
-              {showPassword ? (
-                <motion.span
-                  key="hide"
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.6, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="inline-flex"
-                >
-                  <EyeOff className="h-4 w-4" aria-hidden />
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="show"
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.6, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="inline-flex"
-                >
-                  <Eye className="h-4 w-4" aria-hidden />
-                </motion.span>
-              )}
-            </AnimatePresence>
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" aria-hidden />
+            ) : (
+              <Eye className="h-4 w-4" aria-hidden />
+            )}
           </button>
         </div>
         <FieldError message={error} />

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { get } from "@/lib/axios";
 import { getErrorMessage, isUnauthorizedError } from "@/lib/errors";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useAuth } from "@/hooks/useAuth";
 import type { ApiResponse, TaskStats } from "@/types";
 
@@ -16,10 +17,15 @@ const DEFAULT_STATS: TaskStats = {
   completedToday: 0,
 };
 
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_DESKTOP_MS = 30_000;
+const POLL_INTERVAL_MOBILE_MS = 60_000;
 
 export function useTaskStats() {
   const { isAuthenticated } = useAuth();
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+  const pollIntervalMs = isMobile
+    ? POLL_INTERVAL_MOBILE_MS
+    : POLL_INTERVAL_DESKTOP_MS;
   const [stats, setStats] = useState<TaskStats>(DEFAULT_STATS);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +71,7 @@ export function useTaskStats() {
     () => {
       void fetchStats(true);
     },
-    POLL_INTERVAL_MS,
+    pollIntervalMs,
     isAuthenticated
   );
 
