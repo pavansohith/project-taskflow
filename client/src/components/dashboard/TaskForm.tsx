@@ -95,7 +95,7 @@ function getDefaultValues(task?: ITask): TaskFormValues {
 }
 
 const fieldClass =
-  "h-11 w-full rounded-lg border border-border bg-bg-base px-3 text-base text-text-primary placeholder:text-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 disabled:opacity-50 sm:text-sm";
+  "h-11 w-full rounded-lg border border-border bg-transparent px-3 text-base text-text-primary placeholder:text-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 disabled:opacity-50 sm:text-sm";
 
 export function TaskForm({
   task,
@@ -235,8 +235,8 @@ export function TaskForm({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "animate-task-modal-in relative z-10 flex w-full flex-col overflow-hidden border border-border bg-bg-surface shadow-[var(--shadow-modal)]",
-          "max-h-[92dvh] rounded-t-2xl sm:max-h-[min(88dvh,720px)] sm:max-w-[520px] sm:rounded-2xl md:max-w-[560px]"
+          "animate-task-modal-in relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-surface shadow-[var(--shadow-modal)] md:max-w-2xl md:rounded-2xl",
+          "max-h-[90vh]"
         )}
         onClick={(e) => e.stopPropagation()}
       >
@@ -248,9 +248,9 @@ export function TaskForm({
           <span className="h-1 w-10 rounded-full bg-border-strong" />
         </div>
 
-        {/* Header */}
-        <div className="flex shrink-0 items-start gap-3 border-b border-border px-4 pb-4 pt-1 sm:px-6 sm:pt-5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+        {/* Header — same surface bg as body; border only for separation */}
+        <div className="flex shrink-0 items-start gap-3 border-b border-border px-5 pb-4 pt-1 sm:px-6 sm:pt-5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-indigo-600 dark:text-indigo-400">
             <ListTodo className="h-5 w-5" strokeWidth={1.75} aria-hidden />
           </div>
           <div className="min-w-0 flex-1 pr-2">
@@ -265,7 +265,7 @@ export function TaskForm({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-text-muted transition-colors hover:text-text-primary"
             aria-label="Close"
           >
             <X className="h-4 w-4" strokeWidth={2} />
@@ -276,8 +276,8 @@ export function TaskForm({
           onSubmit={handleSubmit(onSubmit)}
           className="flex min-h-0 flex-1 flex-col"
         >
-          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-5 sm:space-y-6 sm:px-6">
-            <div className="space-y-4">
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
+            <div className="w-full space-y-4">
               <Input
                 label="Title"
                 placeholder="What needs to be done?"
@@ -287,7 +287,7 @@ export function TaskForm({
                 {...register("title")}
               />
 
-              <div className="flex flex-col gap-1.5">
+              <div className="flex w-full flex-col gap-1.5">
                 <label
                   htmlFor="task-description"
                   className="text-sm font-medium text-text-primary"
@@ -330,47 +330,47 @@ export function TaskForm({
               </div>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-bg-base/80 p-4">
-                <p className="mb-3 text-xs font-semibold tracking-wide text-text-muted uppercase">
-                  Priority
-                </p>
-                <Controller
-                  name="priority"
-                  control={control}
-                  render={({ field }) => (
-                    <ToggleButtonGroup
-                      options={priorityOptions}
-                      value={field.value as TaskPriority}
-                      onChange={field.onChange}
-                      disabled={isSubmitting}
-                      className="flex-col sm:flex-row"
-                    />
-                  )}
-                />
-              </div>
-
-              <div className="rounded-xl border border-border bg-bg-base/80 p-4">
-                <p className="mb-3 text-xs font-semibold tracking-wide text-text-muted uppercase">
-                  Status
-                </p>
-                <Controller
-                  name="status"
-                  control={control}
-                  render={({ field }) => (
-                    <ToggleButtonGroup
-                      options={statusOptions}
-                      value={field.value as TaskStatus}
-                      onChange={field.onChange}
-                      disabled={isSubmitting}
-                      className="flex-col sm:flex-row"
-                    />
-                  )}
-                />
-              </div>
+            <div className="w-full space-y-3">
+              <p className="text-xs font-semibold tracking-wide text-text-muted uppercase">
+                Priority
+              </p>
+              <Controller
+                name="priority"
+                control={control}
+                render={({ field }) => (
+                  <ToggleButtonGroup
+                    options={priorityOptions}
+                    value={field.value as TaskPriority}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    transparentInactive
+                    className="grid grid-cols-3 gap-2"
+                  />
+                )}
+              />
             </div>
 
-            <div className="rounded-xl border border-border bg-bg-base/80 p-4">
+            <div className="w-full space-y-3">
+              <p className="text-xs font-semibold tracking-wide text-text-muted uppercase">
+                Status
+              </p>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <ToggleButtonGroup
+                    options={statusOptions}
+                    value={field.value as TaskStatus}
+                    onChange={field.onChange}
+                    disabled={isSubmitting}
+                    transparentInactive
+                    className="grid grid-cols-3 gap-2"
+                  />
+                )}
+              />
+            </div>
+
+            <div className="w-full space-y-3">
               <label
                 htmlFor="task-due-date"
                 className="flex items-center gap-2 text-sm font-medium text-text-primary"
@@ -387,18 +387,18 @@ export function TaskForm({
                 id="task-due-date"
                 type="date"
                 disabled={isSubmitting}
-                className={cn(fieldClass, "mt-3")}
+                className={fieldClass}
                 {...register("dueDate")}
               />
               {errors.dueDate?.message && (
-                <p className="mt-1.5 text-sm text-danger-600">
+                <p className="text-sm text-danger-600">
                   {errors.dueDate.message}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="shrink-0 border-t border-border bg-bg-surface px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+          <div className="shrink-0 border-t border-border px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
             <FormErrorBanner message={submitError} />
             <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Button

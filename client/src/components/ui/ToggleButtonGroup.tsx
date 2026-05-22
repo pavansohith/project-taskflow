@@ -15,6 +15,8 @@ interface ToggleButtonGroupProps<T extends string> {
   onChange: (value: T) => void;
   disabled?: boolean;
   className?: string;
+  /** Inactive buttons use transparent bg (e.g. inside modals with a single surface color) */
+  transparentInactive?: boolean;
 }
 
 export function ToggleButtonGroup<T extends string>({
@@ -23,10 +25,11 @@ export function ToggleButtonGroup<T extends string>({
   onChange,
   disabled,
   className,
+  transparentInactive = false,
 }: ToggleButtonGroupProps<T>) {
   return (
     <div
-      className={cn("flex flex-wrap gap-2", className)}
+      className={cn("gap-2", className ?? "flex flex-wrap")}
       role="group"
     >
       {options.map((option) => {
@@ -39,7 +42,9 @@ export function ToggleButtonGroup<T extends string>({
             onClick={() => onChange(option.value)}
             className={cn(
               "min-h-11 flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all duration-200",
-              "border-border bg-bg-surface text-text-secondary hover:bg-bg-elevated",
+              transparentInactive
+                ? "border-border bg-transparent text-text-secondary hover:bg-bg-elevated/40"
+                : "border-border bg-bg-surface text-text-secondary hover:bg-bg-elevated",
               "disabled:cursor-not-allowed disabled:opacity-50",
               isActive && "border-transparent shadow-sm",
               isActive && option.activeClassName,
