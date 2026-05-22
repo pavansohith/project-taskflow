@@ -33,7 +33,7 @@ app.use(
 );
 
 app.options(
-  "*",
+  "/{*path}",
   cors({
     origin: allowedOrigins,
     credentials: true,
