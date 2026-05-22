@@ -1,18 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { Calendar, ListTodo, X } from "lucide-react";
 import { appToast } from "@/lib/toast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
-import { fadeOverlay, scaleIn, slideInUp } from "@/lib/motion";
 import { FormErrorBanner } from "@/components/ui/FormErrorBanner";
 import { getErrorMessage } from "@/lib/errors";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { taskSchema, type TaskFormValues } from "@/lib/validators";
 import { getDefaultPriority } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
@@ -48,12 +46,12 @@ const priorityOptions: {
   {
     value: "Medium",
     label: "Medium",
-    activeClassName: "bg-warning-500 text-white",
+    activeClassName: "bg-amber-500 text-white",
   },
   {
     value: "High",
     label: "High",
-    activeClassName: "bg-danger-500 text-white",
+    activeClassName: "bg-rose-500 text-white",
   },
 ];
 
@@ -69,18 +67,15 @@ const statusOptions: {
   },
   {
     value: "In Progress",
-    label: "In Progress",
-    activeClassName: "bg-primary-600 text-white",
+    label: "In progress",
+    activeClassName: "bg-indigo-600 text-white",
   },
   {
     value: "Completed",
     label: "Done",
-    activeClassName: "bg-success-600 text-white",
+    activeClassName: "bg-emerald-600 text-white",
   },
 ];
-
-const dateInputClass =
-  "h-11 w-full rounded-lg border border-border bg-bg-surface px-3 text-base text-text-primary transition-ring focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 disabled:cursor-not-allowed disabled:opacity-50 [color-scheme:light] dark:[color-scheme:dark] sm:text-sm";
 
 function toDateInputValue(dueDate?: string): string {
   if (!dueDate) return "";
@@ -99,6 +94,9 @@ function getDefaultValues(task?: ITask): TaskFormValues {
   };
 }
 
+const fieldClass =
+  "h-11 w-full rounded-lg border border-border bg-bg-base px-3 text-base text-text-primary placeholder:text-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 disabled:opacity-50 sm:text-sm";
+
 export function TaskForm({
   task,
   onClose,
@@ -107,10 +105,9 @@ export function TaskForm({
   updateTask,
 }: TaskFormProps) {
   const isEditMode = Boolean(task);
-  const isMobile = useMediaQuery("(max-width: 1023px)");
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [descLength, setDescLength] = useState(
     () => task?.description?.length ?? 0
@@ -130,22 +127,18 @@ export function TaskForm({
   const descriptionRegister = register("description");
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     const defaults = getDefaultValues(task);
     reset(defaults);
     setDescLength(defaults.description?.length ?? 0);
   }, [task, reset]);
 
-  const requestClose = useCallback(() => {
-    setIsVisible(false);
-  }, []);
-
-  const handleExitComplete = useCallback(() => {
-    onClose();
-  }, [onClose]);
-
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog || !isVisible) return;
+    if (!dialog || !mounted) return;
 
     const focusableSelector =
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -155,12 +148,12 @@ export function TaskForm({
 
     const timer = window.setTimeout(() => {
       getFocusable()[0]?.focus();
-    }, 50);
+    }, 80);
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        requestClose();
+        onClose();
         return;
       }
 
@@ -190,7 +183,7 @@ export function TaskForm({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [isVisible, requestClose]);
+  }, [mounted, onClose]);
 
   const onSubmit = async (values: TaskFormValues) => {
     setSubmitError(null);
@@ -211,203 +204,224 @@ export function TaskForm({
         appToast.success("Task created");
       }
       onSuccess();
-      requestClose();
+      onClose();
     } catch (error) {
       setSubmitError(getErrorMessage(error));
     }
   };
 
-  const panelVariants = isMobile ? slideInUp : scaleIn;
+  if (!mounted) return null;
 
-  return (
-    <AnimatePresence onExitComplete={handleExitComplete}>
-      {isVisible && (
+  const modalTitle = isEditMode ? "Edit task" : "New task";
+  const modalSubtitle = isEditMode
+    ? "Update details and save your changes."
+    : "Add a title and optional details to track your work.";
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4 md:p-6"
+      role="presentation"
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-[var(--overlay)] animate-modal-overlay-in"
+        onClick={onClose}
+        aria-label="Close dialog"
+      />
+
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className={cn(
+          "animate-task-modal-in relative z-10 flex w-full flex-col overflow-hidden border border-border bg-bg-surface shadow-[var(--shadow-modal)]",
+          "max-h-[92dvh] rounded-t-2xl sm:max-h-[min(88dvh,720px)] sm:max-w-[520px] sm:rounded-2xl md:max-w-[560px]"
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Mobile drag handle */}
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
-          role="presentation"
+          className="flex shrink-0 justify-center pt-3 pb-1 sm:hidden"
+          aria-hidden
         >
-          <motion.button
-            type="button"
-            variants={fadeOverlay}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="absolute inset-0 bg-[var(--overlay)]"
-            onClick={requestClose}
-            aria-label="Close dialog"
-          />
+          <span className="h-1 w-10 rounded-full bg-border-strong" />
+        </div>
 
-          <motion.div
-            ref={dialogRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-            variants={panelVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className={cn(
-              "mobile-gpu relative z-10 flex w-full flex-col overflow-hidden border border-border bg-bg-surface shadow-[var(--shadow-modal)]",
-              "max-h-[min(92dvh,92vh)] rounded-t-2xl sm:max-h-[min(90dvh,90vh)] sm:max-w-lg sm:rounded-xl"
-            )}
-            onClick={(e) => e.stopPropagation()}
+        {/* Header */}
+        <div className="flex shrink-0 items-start gap-3 border-b border-border px-4 pb-4 pt-1 sm:px-6 sm:pt-5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+            <ListTodo className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1 pr-2">
+            <h2
+              id={titleId}
+              className="text-lg font-semibold tracking-tight text-text-primary sm:text-xl"
+            >
+              {modalTitle}
+            </h2>
+            <p className="mt-0.5 text-sm text-text-muted">{modalSubtitle}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-text-muted transition-colors hover:bg-bg-elevated hover:text-text-primary"
+            aria-label="Close"
           >
-            <div className="flex shrink-0 items-center justify-between bg-gradient-to-r from-primary-600 via-accent-600 to-primary-700 px-4 py-3.5 sm:px-6 sm:py-4">
-              <h2
-                id={titleId}
-                className="text-base font-semibold text-white sm:text-lg"
-              >
-                {isEditMode ? "Edit Task" : "Create Task"}
-              </h2>
-              <button
-                type="button"
-                onClick={requestClose}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-white/90 hover:bg-white/15"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
+            <X className="h-4 w-4" strokeWidth={2} />
+          </button>
+        </div>
+
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-5 sm:space-y-6 sm:px-6">
+            <div className="space-y-4">
+              <Input
+                label="Title"
+                placeholder="What needs to be done?"
+                error={errors.title?.message}
+                disabled={isSubmitting}
+                className={fieldClass}
+                {...register("title")}
+              />
+
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="task-description"
+                  className="text-sm font-medium text-text-primary"
+                >
+                  Description
+                  <span className="ml-1 font-normal text-text-muted">
+                    (optional)
+                  </span>
+                </label>
+                <textarea
+                  id="task-description"
+                  rows={3}
+                  maxLength={DESCRIPTION_MAX}
+                  disabled={isSubmitting}
+                  placeholder="Add notes, links, or context..."
+                  className={cn(
+                    fieldClass,
+                    "min-h-[88px] resize-none py-2.5"
+                  )}
+                  name={descriptionRegister.name}
+                  ref={descriptionRegister.ref}
+                  onBlur={descriptionRegister.onBlur}
+                  onChange={(e) => {
+                    setDescLength(e.target.value.length);
+                    void descriptionRegister.onChange(e);
+                  }}
+                />
+                <div className="flex items-center justify-between gap-2">
+                  {errors.description?.message ? (
+                    <p className="text-sm text-danger-600">
+                      {errors.description.message}
+                    </p>
+                  ) : (
+                    <span />
+                  )}
+                  <p className="text-xs tabular-nums text-text-muted">
+                    {descLength}/{DESCRIPTION_MAX}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4 sm:space-y-6 sm:p-6">
-                <section className="space-y-4">
-                  <Input
-                    label="Title"
-                    error={errors.title?.message}
-                    disabled={isSubmitting}
-                    className="text-base sm:text-sm"
-                    {...register("title")}
-                  />
-
-                  <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="task-description"
-                      className="text-sm font-medium text-text-primary"
-                    >
-                      Description
-                    </label>
-                    <textarea
-                      id="task-description"
-                      rows={3}
-                      maxLength={DESCRIPTION_MAX}
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="rounded-xl border border-border bg-bg-base/80 p-4">
+                <p className="mb-3 text-xs font-semibold tracking-wide text-text-muted uppercase">
+                  Priority
+                </p>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <ToggleButtonGroup
+                      options={priorityOptions}
+                      value={field.value as TaskPriority}
+                      onChange={field.onChange}
                       disabled={isSubmitting}
-                      placeholder="Optional details..."
-                      className={cn(
-                        "w-full resize-none rounded-lg border border-border bg-bg-surface px-3 py-2.5 text-base text-text-primary placeholder:text-text-muted transition-ring sm:py-2 sm:text-sm",
-                        "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 disabled:opacity-50"
-                      )}
-                      name={descriptionRegister.name}
-                      ref={descriptionRegister.ref}
-                      onBlur={descriptionRegister.onBlur}
-                      onChange={(e) => {
-                        setDescLength(e.target.value.length);
-                        void descriptionRegister.onChange(e);
-                      }}
+                      className="flex-col sm:flex-row"
                     />
-                    <div className="flex items-center justify-between gap-2">
-                      {errors.description?.message ? (
-                        <p className="text-sm text-danger-600">
-                          {errors.description.message}
-                        </p>
-                      ) : (
-                        <span />
-                      )}
-                      <p className="text-xs text-text-muted">
-                        {descLength} / {DESCRIPTION_MAX}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                <hr className="border-border" />
-
-                <section className="space-y-4">
-                  <div>
-                    <p className="text-label mb-3">Priority</p>
-                    <Controller
-                      name="priority"
-                      control={control}
-                      render={({ field }) => (
-                        <ToggleButtonGroup
-                          options={priorityOptions}
-                          value={field.value as TaskPriority}
-                          onChange={field.onChange}
-                          disabled={isSubmitting}
-                        />
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <p className="text-label mb-3">Status</p>
-                    <Controller
-                      name="status"
-                      control={control}
-                      render={({ field }) => (
-                        <ToggleButtonGroup
-                          options={statusOptions}
-                          value={field.value as TaskStatus}
-                          onChange={field.onChange}
-                          disabled={isSubmitting}
-                        />
-                      )}
-                    />
-                  </div>
-                </section>
-
-                <hr className="border-border" />
-
-                <section>
-                  <label
-                    htmlFor="task-due-date"
-                    className="text-sm font-medium text-text-primary"
-                  >
-                    Due date
-                  </label>
-                  <input
-                    id="task-due-date"
-                    type="date"
-                    disabled={isSubmitting}
-                    className={cn(dateInputClass, "mt-1.5")}
-                    {...register("dueDate")}
-                  />
-                  {errors.dueDate?.message && (
-                    <p className="mt-1 text-sm text-danger-600">
-                      {errors.dueDate.message}
-                    </p>
                   )}
-                </section>
+                />
               </div>
 
-              <div
-                className="shrink-0 space-y-2 border-t border-border bg-bg-elevated/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6"
-              >
-                <FormErrorBanner message={submitError} />
-                <Button
-                  type="submit"
-                  className="h-11 w-full"
-                  isLoading={isSubmitting}
-                >
-                  {isEditMode ? "Save changes" : "Create task"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-11 w-full"
-                  onClick={requestClose}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
+              <div className="rounded-xl border border-border bg-bg-base/80 p-4">
+                <p className="mb-3 text-xs font-semibold tracking-wide text-text-muted uppercase">
+                  Status
+                </p>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <ToggleButtonGroup
+                      options={statusOptions}
+                      value={field.value as TaskStatus}
+                      onChange={field.onChange}
+                      disabled={isSubmitting}
+                      className="flex-col sm:flex-row"
+                    />
+                  )}
+                />
               </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+            </div>
+
+            <div className="rounded-xl border border-border bg-bg-base/80 p-4">
+              <label
+                htmlFor="task-due-date"
+                className="flex items-center gap-2 text-sm font-medium text-text-primary"
+              >
+                <Calendar
+                  className="h-4 w-4 text-indigo-500"
+                  strokeWidth={1.75}
+                  aria-hidden
+                />
+                Due date
+                <span className="font-normal text-text-muted">(optional)</span>
+              </label>
+              <input
+                id="task-due-date"
+                type="date"
+                disabled={isSubmitting}
+                className={cn(fieldClass, "mt-3")}
+                {...register("dueDate")}
+              />
+              {errors.dueDate?.message && (
+                <p className="mt-1.5 text-sm text-danger-600">
+                  {errors.dueDate.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="shrink-0 border-t border-border bg-bg-surface px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+            <FormErrorBanner message={submitError} />
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button
+                type="submit"
+                className="h-11 w-full sm:flex-1"
+                isLoading={isSubmitting}
+              >
+                {isEditMode ? "Save changes" : "Create task"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-11 w-full sm:w-auto sm:min-w-[100px]"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
   );
 }

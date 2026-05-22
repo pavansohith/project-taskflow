@@ -443,18 +443,16 @@ export default function DashboardPage() {
         onRetry={refetchActivity}
       />
 
-      <AnimatePresence>
-        {isFormOpen && (
-          <TaskForm
-            key={editingTask?._id ?? "create"}
-            task={editingTask}
-            createTask={createTask}
-            updateTask={updateTask}
-            onClose={handleCloseForm}
-            onSuccess={handleFormSuccess}
-          />
-        )}
-      </AnimatePresence>
+      {isFormOpen && (
+        <TaskForm
+          key={editingTask?._id ?? "create"}
+          task={editingTask}
+          createTask={createTask}
+          updateTask={updateTask}
+          onClose={handleCloseForm}
+          onSuccess={handleFormSuccess}
+        />
+      )}
     </div>
   );
 }
