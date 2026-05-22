@@ -1,13 +1,14 @@
 "use client";
 
 import { memo } from "react";
-import { motion } from "framer-motion";
-import { RefreshCw } from "lucide-react";
-import { NoActivityIllustration } from "@/components/ui/illustrations/NoActivityIllustration";
-import { RecentActivitySkeleton } from "@/components/ui/Skeleton";
-import { fadeInUp, staggerContainer, staggerItem } from "@/lib/motion";
-import { getActivityMessage, getActivityStatusColor } from "@/lib/activity";
+import { Inbox, RefreshCw } from "lucide-react";
+import {
+  getActivityStatusColor,
+  getActivityStatusLabel,
+  getActivityTitle,
+} from "@/lib/activity";
 import { formatRelativeDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { TaskActivityItem } from "@/types";
 
 interface RecentActivityProps {
@@ -17,6 +18,51 @@ interface RecentActivityProps {
   onRetry: () => void;
 }
 
+function formatActivityMessage(item: TaskActivityItem) {
+  const title = getActivityTitle(item);
+  const label = getActivityStatusLabel(item);
+
+  if (label === "Created") {
+    return (
+      <>
+        New task <span className="font-medium text-white">&apos;{title}&apos;</span>{" "}
+        created
+      </>
+    );
+  }
+
+  return (
+    <>
+      <span className="font-medium text-white">&apos;{title}&apos;</span> marked as{" "}
+      {label}
+    </>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <div
+      className="rounded-xl border border-[#1f2d45] bg-[#111827] p-6"
+      aria-busy="true"
+      aria-label="Loading recent activity"
+    >
+      <div className="mb-5 flex items-center justify-between">
+        <div className="h-4 w-28 animate-pulse rounded bg-white/10" />
+        <div className="h-3 w-12 animate-pulse rounded bg-white/10" />
+      </div>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="flex gap-3 border-b border-white/5 py-3 last:border-b-0">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-white/10" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-full animate-pulse rounded bg-white/10" />
+            <div className="h-2 w-16 animate-pulse rounded bg-white/10" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export const RecentActivity = memo(function RecentActivity({
   activity,
   isLoading,
@@ -24,81 +70,89 @@ export const RecentActivity = memo(function RecentActivity({
   onRetry,
 }: RecentActivityProps) {
   if (isLoading) {
-    return <RecentActivitySkeleton />;
+    return (
+      <section>
+        <ActivitySkeleton />
+      </section>
+    );
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-border dark:bg-bg-surface">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-heading-3">Recent Activity</h2>
-        <button
-          type="button"
-          className="min-h-11 text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400"
-          title="Coming soon"
-        >
-          View all
-        </button>
-      </div>
-
-      {error && (
-        <div className="mt-6 flex flex-col items-start gap-3 rounded-lg bg-danger-50 p-4 dark:bg-danger-500/10">
-          <p className="text-sm text-danger-600 dark:text-danger-500">{error}</p>
+    <section>
+      <div className="rounded-xl border border-[#1f2d45] bg-[#111827] p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-white">Recent Activity</h2>
           <button
             type="button"
-            onClick={onRetry}
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-danger-600 hover:bg-danger-50 hover:underline dark:hover:bg-danger-500/10"
+            className="cursor-pointer text-xs text-indigo-400 transition-colors hover:text-indigo-300"
+            aria-label="View all activity (coming soon)"
           >
-            <RefreshCw className="h-4 w-4" />
-            Retry
+            View all
           </button>
         </div>
-      )}
 
-      {!error && activity.length === 0 && (
-        <div className="mt-8 text-center">
-          <NoActivityIllustration />
-          <p className="mt-4 text-sm text-text-secondary">
-            No recent activity yet. Create your first task!
-          </p>
-        </div>
-      )}
-
-      {!error && activity.length > 0 && (
-        <motion.ol
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="relative mt-6 space-y-0"
-        >
-          <div
-            className="absolute bottom-2 left-[5px] top-2 w-px bg-border"
-            aria-hidden
-          />
-          {activity.map((item, index) => (
-            <motion.li
-              key={`${item.updatedAt}-${index}`}
-              variants={staggerItem}
-              className="relative flex gap-4 pb-6 last:pb-0"
+        {error && (
+          <div className="mb-4 flex items-center gap-3 rounded-lg border border-rose-500/30 bg-rose-500/5 px-4 py-3">
+            <p className="text-sm text-rose-400">{error}</p>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-flex items-center gap-1 text-sm font-medium text-rose-400 hover:underline"
             >
-              <span
-                className={`relative z-10 mt-1.5 h-3 w-3 shrink-0 rounded-full ring-4 ring-bg-surface ${getActivityStatusColor(item.status)}`}
-                aria-hidden
-              />
-              <div className="min-w-0 flex-1 pt-0.5">
-                <motion.p
-                  variants={fadeInUp}
-                  className="text-sm text-text-primary"
+              <RefreshCw className="h-3.5 w-3.5" />
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!error && activity.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <Inbox className="h-8 w-8 text-white/10" strokeWidth={1.5} aria-hidden />
+            <p className="mt-2 text-sm text-white/20">No activity yet</p>
+          </div>
+        )}
+
+        {!error && activity.length > 0 && (
+          <ul>
+            {activity.map((item, index) => {
+              const isLast = index === activity.length - 1;
+              return (
+                <li
+                  key={`${item.updatedAt}-${index}`}
+                  className={cn(
+                    "flex items-start gap-3 py-3",
+                    !isLast && "border-b border-white/5"
+                  )}
                 >
-                  {getActivityMessage(item)}
-                </motion.p>
-                <p className="text-mono-data mt-1 text-text-muted">
-                  {formatRelativeDate(item.updatedAt)}
-                </p>
-              </div>
-            </motion.li>
-          ))}
-        </motion.ol>
-      )}
+                  <div className="flex w-2 shrink-0 flex-col items-center self-stretch">
+                    <span
+                      className={cn(
+                        "h-2 w-2 shrink-0 rounded-full",
+                        getActivityStatusColor(item.status)
+                      )}
+                      aria-hidden
+                    />
+                    {!isLast && (
+                      <span
+                        className="mt-1 w-px flex-1 border-l border-dashed border-white/10"
+                        aria-hidden
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1 pb-1">
+                    <p className="text-sm text-white/80">
+                      {formatActivityMessage(item)}
+                    </p>
+                    <p className="mt-0.5 text-xs text-white/30">
+                      {formatRelativeDate(item.updatedAt)}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </section>
   );
 });

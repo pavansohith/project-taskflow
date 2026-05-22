@@ -4,15 +4,16 @@ import axios, {
   type AxiosResponse,
 } from "axios";
 import { appToast } from "@/lib/toast";
+import {
+  type ApiErrorBody,
+  getErrorMessage,
+  isAuthRequestUrl,
+  isSilentAuthUrl,
+  isUnauthorizedError,
+} from "@/lib/errors";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-
-export interface ApiErrorBody {
-  success: false;
-  message: string;
-  errorCode?: string;
-}
 
 type SessionExpiredHandler = () => void;
 
@@ -38,23 +39,22 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorBody>) => {
     const status = error.response?.status;
-    const errorCode = error.response?.data?.errorCode;
+    const requestUrl = error.config?.url ?? "";
 
-    if (
-      status === 401 &&
-      errorCode === "SESSION_EXPIRED" &&
-      typeof window !== "undefined"
-    ) {
+    if (status === 401 && typeof window !== "undefined") {
+      if (isAuthRequestUrl(requestUrl) || isSilentAuthUrl(requestUrl)) {
+        return Promise.reject(error);
+      }
+
       sessionExpiredHandler?.();
-
-      appToast.error("Session expired. Please login again.");
+      appToast.error("Your session has expired. Signing you out...");
 
       const path = window.location.pathname;
       const isAuthPage =
         path.startsWith("/login") || path.startsWith("/register");
 
       if (!isAuthPage) {
-        window.location.href = "/login";
+        window.location.href = "/login?reason=session_expired";
       }
     }
 
@@ -99,13 +99,9 @@ export async function del<T>(
 /** @alias del */
 export { del as delete };
 
-export function getErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const data = error.response?.data as ApiErrorBody | undefined;
-    return data?.message ?? error.message ?? "Something went wrong";
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return "Something went wrong";
-}
+export {
+  getErrorMessage,
+  getFieldErrors,
+  isUnauthorizedError,
+  type ApiErrorBody,
+} from "@/lib/errors";

@@ -17,7 +17,8 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { getPasswordStrength } from "@/lib/passwordStrength";
-import { getErrorMessage } from "@/lib/axios";
+import { FormErrorBanner } from "@/components/ui/FormErrorBanner";
+import { getErrorMessage } from "@/lib/errors";
 import {
   updatePasswordSchema,
   updateProfileSchema,
@@ -93,6 +94,7 @@ export default function ProfilePage() {
   const { isLoading, updateProfile, updatePassword } = useProfile();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     void refreshUser();
@@ -136,15 +138,16 @@ export default function ProfilePage() {
   };
 
   const onSaveProfile = async (values: UpdateProfileFormValues) => {
+    setProfileError(null);
     try {
       const data = await updateProfile(values);
       if (data.data?.user) {
         updateUser(data.data.user);
       }
       setIsEditingProfile(false);
-      appToast.success("Profile updated");
+      appToast.success("Profile saved");
     } catch (err) {
-      appToast.error(getErrorMessage(err));
+      setProfileError(getErrorMessage(err));
     }
   };
 
@@ -156,9 +159,11 @@ export default function ProfilePage() {
     } catch (err) {
       const message = getErrorMessage(err);
       if (message.toLowerCase().includes("current password")) {
-        passwordForm.setError("currentPassword", { message });
+        passwordForm.setError("currentPassword", {
+          message: "Current password is incorrect",
+        });
       } else {
-        appToast.error(message);
+        passwordForm.setError("root", { message });
       }
     }
   };
@@ -243,6 +248,7 @@ export default function ProfilePage() {
                 Email cannot be changed
               </p>
             </div>
+            <FormErrorBanner message={profileError} />
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="submit"
@@ -309,6 +315,7 @@ export default function ProfilePage() {
             error={passwordForm.formState.errors.confirmPassword?.message}
             {...passwordForm.register("confirmPassword")}
           />
+          <FormErrorBanner message={passwordForm.formState.errors.root?.message} />
           <Button type="submit" isLoading={isLoading} className="w-full">
             Update Password
           </Button>

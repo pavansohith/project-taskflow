@@ -2,7 +2,9 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { format } from "date-fns";
 import {
+  CalendarDays,
   CheckCircle2,
   Circle,
   Clock,
@@ -18,16 +20,27 @@ import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { TaskForm } from "@/components/dashboard/TaskForm";
 import { TaskTable } from "@/components/dashboard/TaskTable";
-import { Button } from "@/components/ui/Button";
 import { TaskListSkeleton } from "@/components/ui/Skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useTaskStats } from "@/hooks/useTaskStats";
 import { useTasks } from "@/hooks/useTasks";
 import { getGreeting } from "@/lib/greeting";
-import { getErrorMessage } from "@/lib/axios";
+import { getErrorMessage } from "@/lib/utils";
+import { SlowLoadingState } from "@/components/ui/SlowLoadingState";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import type { ITask, TaskStatus } from "@/types";
+
+function DashboardSectionHeading({ title }: { title: string }) {
+  return (
+    <div className="mb-5 flex items-center gap-3">
+      <span className="shrink-0 text-xs font-semibold tracking-[0.12em] text-white/30 uppercase">
+        {title}
+      </span>
+      <div className="h-px flex-1 bg-white/5" />
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -48,6 +61,7 @@ export default function DashboardPage() {
       ? `+ ${stats.completedToday} today`
       : "None today";
   const pollTrend = justPolled ? "Updated just now" : undefined;
+
   const {
     activity,
     isLoading: activityLoading,
@@ -61,6 +75,7 @@ export default function DashboardPage() {
     totalPages,
     currentPage,
     isLoading,
+    isSlowLoading,
     isError,
     errorMessage,
     isEmpty,
@@ -72,6 +87,8 @@ export default function DashboardPage() {
     setPriorityFilter,
     setPage,
     retry,
+    cancelLoading,
+    dismissSlowLoading,
     createTask,
     updateTask,
     deleteTask,
@@ -96,6 +113,16 @@ export default function DashboardPage() {
     () => getGreeting(user?.name ?? "there"),
     [user?.name]
   );
+
+  const todayLabel = useMemo(
+    () => format(new Date(), "EEEE, MMMM d"),
+    []
+  );
+
+  const taskCountLabel = useMemo(() => {
+    if (isLoading) return "Loading…";
+    return `${total} task${total === 1 ? "" : "s"}`;
+  }, [isLoading, total]);
 
   const clearFilters = useCallback(() => {
     setSearch("");
@@ -164,19 +191,27 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-text-primary">
-          {greeting}
-        </h1>
-        <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-text-secondary">
-          Here&apos;s what&apos;s happening with your tasks today.
-        </p>
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            {greeting}
+          </h1>
+          <p className="mt-2 text-base text-white/50">
+            Here&apos;s what&apos;s happening with your tasks today.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-5 py-3">
+          <CalendarDays
+            className="h-4 w-4 shrink-0 text-indigo-400"
+            strokeWidth={1.5}
+            aria-hidden
+          />
+          <span className="text-base font-medium text-white/70">{todayLabel}</span>
+        </div>
       </header>
 
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-slate-800 dark:text-text-primary">
-          Overview
-        </h2>
+      <section>
+        <DashboardSectionHeading title="Overview" />
         <motion.div
           variants={staggerContainer}
           initial="initial"
@@ -242,80 +277,98 @@ export default function DashboardPage() {
         onRetry={refetchActivity}
       />
 
-      <section className="space-y-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight text-text-primary">
-              Tasks
-            </h2>
-            <p className="mt-1 text-sm text-text-muted">
-              {isLoading
-                ? "Loading…"
-                : `${total} task${total === 1 ? "" : "s"} total`}
-            </p>
+      <section>
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-xs font-semibold tracking-[0.12em] text-white/30 uppercase">
+            Tasks
+          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-white/30">{taskCountLabel}</span>
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="inline-flex h-[34px] items-center gap-1.5 rounded-md bg-indigo-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-indigo-500"
+            >
+              <Plus className="h-[15px] w-[15px]" strokeWidth={1.5} />
+              New Task
+            </button>
           </div>
-          <Button
-            onClick={handleOpenCreate}
-            className="min-h-11 w-full shrink-0 sm:w-auto"
-          >
-            <Plus className="h-4 w-4" />
-            New Task
-          </Button>
         </div>
+        <div className="mb-6 h-px w-full bg-white/5" aria-hidden />
 
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          status={statusFilter}
-          onStatusChange={setStatusFilter}
-          priority={priorityFilter}
-          onPriorityChange={setPriorityFilter}
-          onClear={clearFilters}
-          hasActiveFilters={hasActiveFilters}
-          total={total}
-          isLoading={isLoading}
-        />
+        <div className="overflow-hidden rounded-xl border border-[#1f2d45] bg-[#111827]">
+          <FilterBar
+            embedded
+            search={search}
+            onSearchChange={setSearch}
+            status={statusFilter}
+            onStatusChange={setStatusFilter}
+            priority={priorityFilter}
+            onPriorityChange={setPriorityFilter}
+            onClear={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+            total={total}
+            isLoading={isLoading}
+          />
 
-        <motion.div
-          key={filterKey}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          {isError && errorMessage ? (
-            <ErrorState message={errorMessage} onRetry={retry} />
-          ) : isLoading ? (
-            <TaskListSkeleton rows={5} />
-          ) : isEmpty ? (
-            <EmptyState
-              title={hasActiveFilters ? "No matching tasks" : "No tasks yet"}
-              description={
-                hasActiveFilters
-                  ? "Try adjusting your search or filters."
-                  : "Create your first task to get started."
-              }
-              actionLabel={hasActiveFilters ? undefined : "Create task"}
-              onAction={hasActiveFilters ? undefined : handleOpenCreate}
-            />
-          ) : (
-            <>
-              <TaskTable
-                tasks={tasks}
-                onEdit={handleOpenEdit}
-                onDelete={handleDelete}
-                onStatusChange={handleStatusChange}
-                isUpdatingId={updatingId}
-              />
-              <Pagination
-                className="mt-4"
-                page={currentPage}
-                totalPages={totalPages}
-                total={total}
-                onPageChange={setPage}
-              />
-            </>
-          )}
-        </motion.div>
+          <motion.div
+            key={filterKey}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15 }}
+          >
+            {isError && errorMessage ? (
+              <div className="px-5 py-8">
+                <ErrorState
+                  title="Unable to load tasks"
+                  message={errorMessage}
+                  onRetry={retry}
+                  compact
+                />
+              </div>
+            ) : isLoading ? (
+              isSlowLoading ? (
+                <SlowLoadingState
+                  onCancel={cancelLoading}
+                  onKeepWaiting={dismissSlowLoading}
+                />
+              ) : (
+                <TaskListSkeleton rows={5} />
+              )
+            ) : isEmpty ? (
+              <div className="px-5 py-8">
+                <EmptyState
+                  title={hasActiveFilters ? "No matching tasks" : "No tasks yet"}
+                  description={
+                    hasActiveFilters
+                      ? "Try adjusting your search or filters."
+                      : "Create your first task to get started."
+                  }
+                  actionLabel={hasActiveFilters ? undefined : "Create task"}
+                  onAction={hasActiveFilters ? undefined : handleOpenCreate}
+                />
+              </div>
+            ) : (
+              <>
+                <TaskTable
+                  embedded
+                  tasks={tasks}
+                  onEdit={handleOpenEdit}
+                  onDelete={handleDelete}
+                  onStatusChange={handleStatusChange}
+                  isUpdatingId={updatingId}
+                />
+                <Pagination
+                  embedded
+                  page={currentPage}
+                  totalPages={totalPages}
+                  total={total}
+                  onPageChange={setPage}
+                />
+              </>
+            )}
+          </motion.div>
+        </div>
       </section>
 
       <AnimatePresence>

@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -7,34 +7,40 @@ export interface ErrorStateProps {
   message: string;
   onRetry: () => void;
   className?: string;
+  compact?: boolean;
 }
 
 export function ErrorState({
-  title = "Something went wrong",
+  title = "Unable to load tasks",
   message,
   onRetry,
   className,
+  compact = false,
 }: ErrorStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-danger-500/30 bg-danger-50/50 px-4 py-12 text-center sm:px-6",
-        "dark:bg-danger-500/10",
+        "flex flex-col items-center justify-center text-center",
+        compact ? "px-4 py-8" : "rounded-xl px-4 py-12 sm:px-6",
         className
       )}
       role="alert"
     >
-      <div
-        className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-danger-50 dark:bg-danger-500/20"
-        aria-hidden="true"
+      <WifiOff
+        className="h-8 w-8 text-rose-400/50"
+        strokeWidth={1.5}
+        aria-hidden
+      />
+      <h3 className="mt-3 text-sm font-medium text-white/60">{title}</h3>
+      <p className="mt-1 max-w-md text-xs text-white/30">{message}</p>
+      <Button
+        variant="secondary"
+        type="button"
+        className="mt-4 h-8 px-3 text-xs"
+        onClick={onRetry}
       >
-        <AlertCircle className="h-6 w-6 text-danger-600 dark:text-danger-500" />
-      </div>
-      <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
-      <p className="mt-1 max-w-md text-sm text-text-secondary">{message}</p>
-      <Button className="mt-6 min-h-11 w-full max-w-xs" onClick={onRetry}>
-        <RefreshCw className="h-4 w-4" />
-        Retry
+        <RefreshCw className="h-3.5 w-3.5" />
+        Try again
       </Button>
     </div>
   );

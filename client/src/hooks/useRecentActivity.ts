@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { get, getErrorMessage } from "@/lib/axios";
+import { get } from "@/lib/axios";
+import { getErrorMessage, isUnauthorizedError } from "@/lib/errors";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
 import { useAuth } from "@/hooks/useAuth";
 import type { ApiResponse, TaskActivityItem } from "@/types";
@@ -27,6 +28,10 @@ export function useRecentActivity() {
         );
         setActivity(data.data ?? []);
       } catch (err) {
+        if (isUnauthorizedError(err)) {
+          if (!silent) setIsLoading(false);
+          return;
+        }
         setError(getErrorMessage(err));
         if (!silent) setActivity([]);
       } finally {

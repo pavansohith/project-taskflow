@@ -1,16 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { appToast } from "@/lib/toast";
+import { get, post, put, del } from "@/lib/axios";
 import {
-  get,
-  post,
-  put,
-  del,
   getErrorMessage,
+  isUnauthorizedError,
   type ApiErrorBody,
-} from "@/lib/axios";
+} from "@/lib/errors";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
 import { useAuth } from "@/context/AuthContext";
@@ -27,6 +25,7 @@ import type {
 
 const POLL_INTERVAL_MS = 30_000;
 const MAX_FETCH_ATTEMPTS = 2;
+const LOADING_TIMEOUT_MS = 8_000;
 
 function deduplicateById(taskList: Task[]): Task[] {
   const seen = new Set<string>();
@@ -41,24 +40,27 @@ function deduplicateById(taskList: Task[]): Task[] {
 function shouldAutoRetry(error: unknown): boolean {
   if (!axios.isAxiosError<ApiErrorBody>(error)) return true;
   const status = error.response?.status;
-  if (status === 401 || status === 403) return false;
+  if (status && status >= 400 && status < 500) return false;
   if (status === 500) return true;
   if (!error.response) return true;
   return false;
 }
 
-function handleAuthError(
-  err: unknown,
-  logout: () => Promise<void>
-): boolean {
-  if (!axios.isAxiosError<ApiErrorBody>(err)) return false;
-  if (err.response?.status !== 401) return false;
-  void logout();
-  return true;
+function resolveTasksErrorMessage(error: unknown): string {
+  if (axios.isAxiosError<ApiErrorBody>(error)) {
+    const status = error.response?.status;
+    const errorCode = error.response?.data?.errorCode;
+
+    if (status === 500 || errorCode === "SERVER_FAILURE") {
+      return "The server returned an error.";
+    }
+  }
+
+  return getErrorMessage(error);
 }
 
 export function useTasks() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
@@ -66,6 +68,7 @@ export function useTasks() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isSlowLoading, setIsSlowLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isEmpty, setIsEmpty] = useState(false);
@@ -79,6 +82,8 @@ export function useTasks() {
     typeof window !== "undefined" ? getTasksPerPage() : 10
   );
 
+  const fetchGenerationRef = useRef(0);
+
   const debouncedSearch = useDebounce(search, 400);
 
   useEffect(() => {
@@ -91,12 +96,28 @@ export function useTasks() {
       window.removeEventListener("taskflow-settings-change", onSettingsChange);
   }, []);
 
+  useEffect(() => {
+    if (!isLoading) {
+      setIsSlowLoading(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsSlowLoading(true);
+    }, LOADING_TIMEOUT_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [isLoading]);
+
   const fetchTasks = useCallback(
     async (silent = false) => {
       if (!isAuthenticated) return;
 
+      const generation = ++fetchGenerationRef.current;
+
       if (!silent) {
         setIsLoading(true);
+        setIsSlowLoading(false);
       }
       setIsError(false);
       setErrorMessage(null);
@@ -122,11 +143,15 @@ export function useTasks() {
             `/api/tasks?${params.toString()}`
           );
 
+          if (generation !== fetchGenerationRef.current) return;
+
           const rawList = Array.isArray(data.data) ? data.data : [];
           const list = deduplicateById(rawList);
 
           if (rawList.length > list.length) {
-            appToast.warning("Duplicate data detected and cleaned");
+            appToast.warning(
+              "Duplicate data detected and cleaned automatically"
+            );
           }
 
           setTasks(list);
@@ -153,36 +178,19 @@ export function useTasks() {
         } catch (err) {
           lastError = err;
 
-          if (handleAuthError(err, logout)) {
+          if (isUnauthorizedError(err)) {
             if (!silent) setIsLoading(false);
             return;
-          }
-
-          if (axios.isAxiosError<ApiErrorBody>(err)) {
-            const status = err.response?.status;
-            const errorCode = err.response?.data?.errorCode;
-            const message =
-              err.response?.data?.message ?? getErrorMessage(err);
-
-            if (status === 500 && errorCode === "SERVER_FAILURE") {
-              if (attempt < MAX_FETCH_ATTEMPTS - 1 && shouldAutoRetry(err)) {
-                continue;
-              }
-              setIsError(true);
-              setErrorMessage(message);
-              setIsEmpty(false);
-              setTasks([]);
-              if (!silent) setIsLoading(false);
-              return;
-            }
           }
 
           if (attempt < MAX_FETCH_ATTEMPTS - 1 && shouldAutoRetry(err)) {
             continue;
           }
 
+          if (generation !== fetchGenerationRef.current) return;
+
           setIsError(true);
-          setErrorMessage(getErrorMessage(err));
+          setErrorMessage(resolveTasksErrorMessage(err));
           setIsEmpty(false);
           setTasks([]);
           if (!silent) setIsLoading(false);
@@ -190,16 +198,15 @@ export function useTasks() {
         }
       }
 
-      if (lastError) {
+      if (lastError && generation === fetchGenerationRef.current) {
         setIsError(true);
-        setErrorMessage(getErrorMessage(lastError));
+        setErrorMessage(resolveTasksErrorMessage(lastError));
         setTasks([]);
       }
       if (!silent) setIsLoading(false);
     },
     [
       isAuthenticated,
-      logout,
       debouncedSearch,
       statusFilter,
       priorityFilter,
@@ -211,6 +218,16 @@ export function useTasks() {
   const retry = useCallback(() => {
     void fetchTasks();
   }, [fetchTasks]);
+
+  const cancelLoading = useCallback(() => {
+    fetchGenerationRef.current += 1;
+    setIsLoading(false);
+    setIsSlowLoading(false);
+  }, []);
+
+  const dismissSlowLoading = useCallback(() => {
+    setIsSlowLoading(false);
+  }, []);
 
   const setPage = useCallback((n: number) => {
     setCurrentPage(Math.max(1, n));
@@ -278,6 +295,7 @@ export function useTasks() {
     totalPages,
     currentPage,
     isLoading,
+    isSlowLoading,
     isError,
     errorMessage,
     isEmpty,
@@ -289,6 +307,8 @@ export function useTasks() {
     updateTask,
     deleteTask,
     retry,
+    cancelLoading,
+    dismissSlowLoading,
     setPage,
     setSearch,
     setStatusFilter,

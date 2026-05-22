@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
 import { fadeOverlay, scaleIn } from "@/lib/motion";
-import { getErrorMessage } from "@/lib/axios";
+import { FormErrorBanner } from "@/components/ui/FormErrorBanner";
+import { getErrorMessage } from "@/lib/errors";
 import { taskSchema, type TaskFormValues } from "@/lib/validators";
 import { getDefaultPriority } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
@@ -114,6 +115,7 @@ export function TaskForm({
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -191,6 +193,7 @@ export function TaskForm({
   }, [isVisible, requestClose]);
 
   const onSubmit = async (values: TaskFormValues) => {
+    setSubmitError(null);
     const payload = {
       title: values.title,
       description: values.description?.trim() || undefined,
@@ -210,7 +213,7 @@ export function TaskForm({
       onSuccess();
       requestClose();
     } catch (error) {
-      appToast.error(getErrorMessage(error));
+      setSubmitError(getErrorMessage(error));
     }
   };
 
@@ -242,7 +245,7 @@ export function TaskForm({
             animate="animate"
             exit="exit"
             className={cn(
-              "relative z-10 flex w-full max-h-[92vh] max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-surface shadow-xl max-md:max-w-none md:max-h-[90vh] md:rounded-2xl"
+              "relative z-10 flex w-full max-h-[92vh] max-w-lg flex-col overflow-hidden rounded-t-xl border border-border bg-bg-surface shadow-[var(--shadow-modal)] max-md:max-w-none md:max-h-[90vh] md:rounded-xl"
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -372,6 +375,7 @@ export function TaskForm({
               </div>
 
               <div className="shrink-0 space-y-2 border-t border-border bg-bg-elevated/50 p-6">
+                <FormErrorBanner message={submitError} />
                 <Button
                   type="submit"
                   className="h-11 w-full"

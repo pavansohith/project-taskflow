@@ -40,9 +40,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         />
         <main
           data-dashboard-main
-          className="flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8"
+          className="flex-1 overflow-x-hidden overflow-y-auto px-8 py-8"
         >
-          <div className="mx-auto w-full max-w-7xl pb-8">
+          <div className="w-full pb-8">
             <DashboardPageTransition>{children}</DashboardPageTransition>
           </div>
         </main>

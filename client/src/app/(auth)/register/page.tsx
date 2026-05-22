@@ -7,14 +7,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { appToast } from "@/lib/toast";
 import { AuthMobileLogo } from "@/components/auth/AuthMobileLogo";
 import { Button } from "@/components/ui/Button";
+import { FormErrorBanner } from "@/components/ui/FormErrorBanner";
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/hooks/useAuth";
 import { fadeInUp } from "@/lib/motion";
-import { getErrorMessage } from "@/lib/axios";
+import { getErrorMessage } from "@/lib/errors";
 import { registerSchema, type RegisterFormValues } from "@/lib/validators";
 
 const authFormShell =
@@ -26,7 +26,7 @@ const authInputClass =
 export default function RegisterPage() {
   const { register: registerUser } = useAuth();
   const router = useRouter();
-  const [submitError, setSubmitError] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const {
@@ -44,7 +44,7 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
-    setSubmitError(false);
+    setSubmitError(null);
     try {
       const { name, email, password } = values;
       await registerUser({ name, email, password }, { redirect: false });
@@ -52,8 +52,7 @@ export default function RegisterPage() {
       await new Promise((r) => setTimeout(r, 650));
       router.push("/dashboard");
     } catch (error) {
-      setSubmitError(true);
-      appToast.error(getErrorMessage(error));
+      setSubmitError(getErrorMessage(error));
     }
   };
 
@@ -108,6 +107,8 @@ export default function RegisterPage() {
             className={authInputClass}
             {...register("confirmPassword")}
           />
+
+          <FormErrorBanner message={submitError} />
 
           <Button
             type="submit"

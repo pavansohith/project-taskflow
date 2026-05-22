@@ -4,7 +4,6 @@ import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { StatusPopover } from "@/components/dashboard/StatusPopover";
 import { staggerContainer, staggerItem } from "@/lib/motion";
@@ -18,18 +17,21 @@ interface TaskTableProps {
   onDelete: (id: string) => void | Promise<void>;
   onStatusChange: (id: string, status: TaskStatus) => void;
   isUpdatingId?: string | null;
+  embedded?: boolean;
 }
+
+const badgeClass = "px-2.5 py-1 text-xs";
 
 function DueDateCell({ dueDate }: { dueDate?: string }) {
   const tone = getDueDateTone(dueDate);
   return (
-    <span className={cn("text-sm", dueDateTextClass[tone])}>
+    <span className={dueDateTextClass[tone]}>
       {dueDate ? formatDate(dueDate) : "—"}
     </span>
   );
 }
 
-function TaskActions({
+function RowActions({
   task,
   onEdit,
   onDelete,
@@ -40,30 +42,31 @@ function TaskActions({
   onDelete: (task: Task) => void;
   disabled?: boolean;
 }) {
+  const btn =
+    "flex h-7 w-7 items-center justify-center rounded-md text-white/40 opacity-100 transition-all duration-150 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-white/10 hover:text-white/80 disabled:opacity-40";
+
   return (
-    <div className="flex items-center justify-end gap-1">
-      <Button
-        variant="ghost"
-        size="sm"
+    <div className="flex items-center justify-end gap-0.5">
+      <button
+        type="button"
         onClick={() => onEdit(task)}
         disabled={disabled}
-        className="h-11 w-11 min-h-11 min-w-11 p-0"
+        className={btn}
         title="Edit task"
         aria-label={`Edit ${task.title}`}
       >
-        <Pencil className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
+        <Pencil className="h-[15px] w-[15px]" strokeWidth={1.5} />
+      </button>
+      <button
+        type="button"
         onClick={() => onDelete(task)}
         disabled={disabled}
-        className="h-11 w-11 min-h-11 min-w-11 p-0 text-danger-600 hover:text-danger-600"
+        className={cn(btn, "hover:bg-rose-500/10 hover:text-rose-400")}
         title="Delete task"
         aria-label={`Delete ${task.title}`}
       >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+        <Trash2 className="h-[15px] w-[15px]" strokeWidth={1.5} />
+      </button>
     </div>
   );
 }
@@ -91,33 +94,32 @@ function TaskCardMobile({
     <motion.article
       variants={staggerItem}
       className={cn(
-        "rounded-xl border border-border bg-bg-surface p-4 shadow-sm",
-        overdue && "border-l-4 border-l-danger-500"
+        "group border-b border-[#1f2d45] px-5 py-4 last:border-b-0",
+        overdue && "border-l-2 border-l-rose-500"
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-text-primary">{task.title}</h3>
+          <h3 className="text-sm font-medium text-white/90">{task.title}</h3>
           {task.description && (
-            <p className="mt-1 line-clamp-2 text-xs text-text-muted">
+            <p className="mt-0.5 line-clamp-2 text-xs text-white/30">
               {task.description}
             </p>
           )}
         </div>
-        <TaskActions
+        <RowActions
           task={task}
           onEdit={onEdit}
           onDelete={onDelete}
           disabled={isUpdating}
         />
       </div>
-
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Badge
           label={task.priority}
           kind="priority"
           value={task.priority}
-          showDot
+          className={badgeClass}
         />
         <StatusPopover
           status={task.status}
@@ -125,20 +127,12 @@ function TaskCardMobile({
           disabled={isUpdating}
           onOpen={() => setStatusOpenId(task._id)}
           onClose={() => setStatusOpenId(null)}
-          onSelect={(status) => onStatusChange(task._id, status)}
+          onSelect={(s) => onStatusChange(task._id, s)}
         />
       </div>
-
-      <div className="mt-3 flex items-center justify-between text-xs text-text-muted">
+      <div className="mt-2">
         <DueDateCell dueDate={task.dueDate} />
-        <span className="text-mono-data">
-          {formatDate(task.createdAt, "MMM d")}
-        </span>
       </div>
-
-      <p className="mt-2 text-center text-[10px] text-text-muted/80">
-        Swipe for actions — coming soon
-      </p>
     </motion.article>
   );
 }
@@ -149,6 +143,7 @@ export const TaskTable = memo(function TaskTable({
   onDelete,
   onStatusChange,
   isUpdatingId,
+  embedded = false,
 }: TaskTableProps) {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -165,14 +160,16 @@ export const TaskTable = memo(function TaskTable({
     }
   };
 
+  const thClass =
+    "px-5 py-3 text-left text-[11px] font-semibold tracking-widest text-white/30 uppercase";
+
   return (
     <>
-      {/* Mobile cards */}
       <motion.div
         variants={staggerContainer}
         initial="initial"
         animate="animate"
-        className="flex flex-col gap-3 lg:hidden"
+        className="flex flex-col lg:hidden"
       >
         {tasks.map((task) => (
           <TaskCardMobile
@@ -188,33 +185,19 @@ export const TaskTable = memo(function TaskTable({
         ))}
       </motion.div>
 
-      {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-border dark:bg-bg-surface lg:block">
+      <div className={cn("hidden lg:block", !embedded && "overflow-hidden rounded-xl border border-[#1f2d45]")}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px] text-left text-sm">
-            <thead className="border-b border-slate-100 bg-slate-50 dark:border-border dark:bg-bg-elevated/80">
-              <tr>
-                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
-                  Title
-                </th>
-                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
-                  Priority
-                </th>
-                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
-                  Due Date
-                </th>
-                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
-                  Created
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
-                  Actions
-                </th>
+          <table className="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-[#1f2d45] bg-[#0d1526]">
+                <th className={thClass}>Title</th>
+                <th className={thClass}>Status</th>
+                <th className={thClass}>Priority</th>
+                <th className={thClass}>Due Date</th>
+                <th className={cn(thClass, "text-right")}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-border">
+            <tbody>
               {tasks.map((task) => {
                 const overdue = isTaskOverdue(task.dueDate, task.status);
                 const isUpdating = isUpdatingId === task._id;
@@ -224,48 +207,43 @@ export const TaskTable = memo(function TaskTable({
                     key={task._id}
                     variants={staggerItem}
                     className={cn(
-                      "transition-colors hover:bg-slate-50 dark:hover:bg-bg-elevated",
-                      overdue && "border-l-4 border-l-danger-500"
+                      "group border-b border-[#1f2d45] transition-colors duration-150 last:border-b-0 hover:bg-white/[0.02]",
+                      overdue && "border-l-2 border-l-rose-500"
                     )}
                   >
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-slate-800 dark:text-text-primary">
+                    <td className="px-5 py-4">
+                      <p className="text-sm font-medium text-white/90">
                         {task.title}
                       </p>
                       {task.description && (
-                        <p className="mt-0.5 line-clamp-1 text-xs text-text-muted">
+                        <p className="mt-0.5 max-w-xs truncate text-xs text-white/30">
                           {task.description}
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <Badge
-                        label={task.priority}
-                        kind="priority"
-                        value={task.priority}
-                        showDot
-                      />
-                    </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4">
                       <StatusPopover
                         status={task.status}
                         isOpen={statusOpenId === task._id}
                         disabled={isUpdating}
                         onOpen={() => setStatusOpenId(task._id)}
                         onClose={() => setStatusOpenId(null)}
-                        onSelect={(status) =>
-                          onStatusChange(task._id, status)
-                        }
+                        onSelect={(s) => onStatusChange(task._id, s)}
                       />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4">
+                      <Badge
+                        label={task.priority}
+                        kind="priority"
+                        value={task.priority}
+                        className={badgeClass}
+                      />
+                    </td>
+                    <td className="px-5 py-4">
                       <DueDateCell dueDate={task.dueDate} />
                     </td>
-                    <td className="px-4 py-3 text-mono-data text-text-secondary">
-                      {formatDate(task.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <TaskActions
+                    <td className="px-5 py-4">
+                      <RowActions
                         task={task}
                         onEdit={onEdit}
                         onDelete={setTaskToDelete}

@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, type InputHTMLAttributes } from "react";
+import { FieldError } from "@/components/ui/FieldError";
 import { cn } from "@/lib/utils";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -35,9 +36,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           {...props}
         />
-        {error && (
-          <p className="text-sm text-danger-600 dark:text-danger-500">{error}</p>
-        )}
+        <FieldError message={error} />
       </div>
     );
   }

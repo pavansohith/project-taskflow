@@ -14,7 +14,6 @@ import {
   get,
   post,
   registerSessionExpiredHandler,
-  getErrorMessage,
 } from "@/lib/axios";
 import type {
   ApiResponse,
@@ -100,8 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await post<ApiResponse<{ message: string }>>("/api/auth/logout");
-    } catch (error) {
-      console.error(getErrorMessage(error));
+    } catch {
+      /* Logout still clears local session if the server is unreachable */
     } finally {
       setUser(null);
       router.push("/login");

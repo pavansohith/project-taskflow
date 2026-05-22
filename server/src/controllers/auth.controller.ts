@@ -33,7 +33,7 @@ export async function register(
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new AppError("User already exists", 409);
+      throw new AppError("An account with this email already exists", 409);
     }
 
     const user = await User.create({ name, email, password });

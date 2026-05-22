@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { getErrorMessage, put } from "@/lib/axios";
+import { put } from "@/lib/axios";
+import { getErrorMessage } from "@/lib/errors";
 import type { ApiResponse, AuthResponse } from "@/types";
 
 interface UpdateProfileInput {

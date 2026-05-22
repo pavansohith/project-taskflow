@@ -1,9 +1,14 @@
 "use client";
 
-import { memo, useMemo, useState } from "react";
-import { Filter, Search, X } from "lucide-react";
+import { memo, useEffect, useRef, useState } from "react";
+import { ChevronDown, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { TaskFilterPriority, TaskFilterStatus, TaskPriority, TaskStatus } from "@/types";
+import type {
+  TaskFilterPriority,
+  TaskFilterStatus,
+  TaskPriority,
+  TaskStatus,
+} from "@/types";
 
 interface FilterBarProps {
   search: string;
@@ -16,44 +21,114 @@ interface FilterBarProps {
   hasActiveFilters: boolean;
   total: number;
   isLoading?: boolean;
+  embedded?: boolean;
 }
 
-const statusPills: { value: TaskStatus; label: string }[] = [
+const statusOptions: { value: TaskFilterStatus; label: string }[] = [
+  { value: "all", label: "All statuses" },
   { value: "Todo", label: "Todo" },
   { value: "In Progress", label: "In Progress" },
   { value: "Completed", label: "Completed" },
 ];
 
-const priorityPills: { value: TaskPriority; label: string }[] = [
+const priorityOptions: { value: TaskFilterPriority; label: string }[] = [
+  { value: "all", label: "All priorities" },
   { value: "Low", label: "Low" },
   { value: "Medium", label: "Medium" },
   { value: "High", label: "High" },
 ];
 
-function FilterPill({
+const statusDot: Record<TaskStatus, string> = {
+  Todo: "bg-slate-400",
+  "In Progress": "bg-indigo-400",
+  Completed: "bg-emerald-400",
+};
+
+const priorityDot: Record<TaskPriority, string> = {
+  Low: "bg-slate-400",
+  Medium: "bg-amber-400",
+  High: "bg-rose-400",
+};
+
+const filterBtnClass =
+  "inline-flex h-[34px] min-w-[100px] items-center justify-between gap-2 rounded-md border border-[#1f2d45] bg-[#0a0f1e] px-3 text-sm text-white/60 transition-colors hover:border-indigo-500/30";
+
+const filterInputClass =
+  "h-[34px] w-[240px] max-w-full rounded-md border border-[#1f2d45] bg-[#0a0f1e] py-0 pr-8 pl-9 text-sm text-white placeholder:text-white/30 transition-colors focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/30";
+
+function FilterDropdown<T extends string>({
   label,
-  active,
-  onClick,
-  activeClassName,
+  value,
+  options,
+  onChange,
+  activeDotClass,
 }: {
   label: string;
-  active: boolean;
-  onClick: () => void;
-  activeClassName?: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+  activeDotClass?: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = options.find((o) => o.value === value) ?? options[0];
+  const isActive = value !== options[0]?.value;
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "min-h-11 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
-        "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-border dark:bg-bg-surface dark:text-text-secondary dark:hover:bg-bg-elevated",
-        active && "border-transparent shadow-sm",
-        active && (activeClassName ?? "bg-primary-600 text-white")
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          filterBtnClass,
+          isActive && "border-indigo-500/50 text-white/90"
+        )}
+      >
+        <span className="flex items-center gap-1.5 truncate">
+          {isActive && activeDotClass && (
+            <span
+              className={cn("h-1.5 w-1.5 shrink-0 rounded-full", activeDotClass)}
+            />
+          )}
+          <span className="truncate">
+            {isActive ? selected.label : label}
+          </span>
+        </span>
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" strokeWidth={1.5} />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 z-30 mt-1 min-w-full overflow-hidden rounded-md border border-[#1f2d45] bg-[#111827] py-1 shadow-lg">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={cn(
+                "flex w-full px-3 py-2 text-left text-sm transition-colors hover:bg-white/5",
+                value === opt.value
+                  ? "font-medium text-indigo-400"
+                  : "text-white/60"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       )}
-    >
-      {label}
-    </button>
+    </div>
   );
 }
 
@@ -68,79 +143,22 @@ export const FilterBar = memo(function FilterBar({
   hasActiveFilters,
   total,
   isLoading = false,
+  embedded = false,
 }: FilterBarProps) {
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (search.trim()) count += 1;
-    if (status !== "all") count += 1;
-    if (priority !== "all") count += 1;
-    return count;
-  }, [search, status, priority]);
-
-  const toggleStatus = (value: TaskStatus) => {
-    onStatusChange(status === value ? "all" : value);
-  };
-
-  const togglePriority = (value: TaskPriority) => {
-    onPriorityChange(priority === value ? "all" : value);
-  };
-
-  const filterPanel = (
-    <div className="space-y-4">
-      <div>
-        <p className="text-label mb-2">Status</p>
-        <div className="flex flex-wrap gap-2">
-          {statusPills.map((pill) => (
-            <FilterPill
-              key={pill.value}
-              label={pill.label}
-              active={status === pill.value}
-              onClick={() => toggleStatus(pill.value)}
-              activeClassName="bg-primary-600 text-white"
-            />
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className="text-label mb-2">Priority</p>
-        <div className="flex flex-wrap gap-2">
-          {priorityPills.map((pill) => (
-            <FilterPill
-              key={pill.value}
-              label={pill.label}
-              active={priority === pill.value}
-              onClick={() => togglePriority(pill.value)}
-              activeClassName={
-                pill.value === "Low"
-                  ? "bg-slate-600 text-white"
-                  : pill.value === "Medium"
-                    ? "bg-warning-500 text-white"
-                    : "bg-danger-500 text-white"
-              }
-            />
-          ))}
-        </div>
-      </div>
-      {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={onClear}
-          className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-        >
-          Clear all
-        </button>
-      )}
-    </div>
-  );
-
   return (
-    <div className="mb-4 space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-bg-surface">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:gap-4">
-        <div className="relative w-full sm:max-w-none lg:w-[280px]">
+    <div
+      className={cn(
+        "flex flex-col gap-3 sm:flex-row sm:items-center",
+        embedded
+          ? "border-b border-[#1f2d45] px-5 py-4"
+          : "mb-4 sm:justify-between"
+      )}
+    >
+      <div className="flex flex-1 flex-wrap items-center gap-3">
+        <div className="relative w-full sm:w-auto">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30"
+            strokeWidth={1.5}
             aria-hidden
           />
           <input
@@ -148,54 +166,56 @@ export const FilterBar = memo(function FilterBar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search tasks..."
-            className={cn(
-              "h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-10 text-sm text-slate-900 placeholder:text-slate-400 transition-ring dark:border-border dark:bg-bg-surface dark:text-text-primary dark:placeholder:text-text-muted",
-              "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:focus:border-primary-500 dark:focus:ring-primary-500/50"
-            )}
+            className={filterInputClass}
             aria-label="Search tasks"
           />
           {search.length > 0 && (
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text-primary"
+              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-white/40 hover:bg-white/10"
               aria-label="Clear search"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" strokeWidth={1.5} />
             </button>
           )}
         </div>
 
-        <p className="shrink-0 text-sm text-text-muted">
-          {isLoading ? "Loading tasks…" : `Showing ${total} task${total === 1 ? "" : "s"}`}
-        </p>
-      </div>
+        <FilterDropdown
+          label="Status"
+          value={status}
+          options={statusOptions}
+          onChange={onStatusChange}
+          activeDotClass={
+            status !== "all" ? statusDot[status as TaskStatus] : undefined
+          }
+        />
+        <FilterDropdown
+          label="Priority"
+          value={priority}
+          options={priorityOptions}
+          onChange={onPriorityChange}
+          activeDotClass={
+            priority !== "all"
+              ? priorityDot[priority as TaskPriority]
+              : undefined
+          }
+        />
 
-      {/* Mobile: collapsible filters */}
-      <div className="md:hidden">
-        <button
-          type="button"
-          onClick={() => setMobileFiltersOpen((o) => !o)}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-bg-elevated px-4 text-sm font-medium text-text-primary"
-          aria-expanded={mobileFiltersOpen}
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-          {activeFilterCount > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-600 px-1.5 text-xs font-semibold text-white">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-        {mobileFiltersOpen && (
-          <div className="mt-4 border-t border-border pt-4">{filterPanel}</div>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-xs font-medium text-white/40 hover:text-white/70"
+          >
+            Clear
+          </button>
         )}
       </div>
 
-      {/* Desktop: always visible */}
-      <div className="hidden md:block border-t border-border pt-4">
-        {filterPanel}
-      </div>
+      <p className="shrink-0 text-xs text-white/30 sm:ml-auto">
+        {isLoading ? "Loading…" : `${total} task${total === 1 ? "" : "s"}`}
+      </p>
     </div>
   );
 });

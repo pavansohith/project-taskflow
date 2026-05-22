@@ -20,8 +20,8 @@ export function isTaskOverdue(dueDate?: string, status?: string): boolean {
 }
 
 export const dueDateTextClass: Record<DueDateTone, string> = {
-  none: "text-text-muted",
-  normal: "text-text-secondary",
-  today: "text-warning-600 dark:text-warning-500",
-  overdue: "text-danger-600 dark:text-danger-500",
+  none: "text-sm text-text-muted",
+  normal: "text-sm text-text-muted",
+  today: "text-sm font-medium text-amber-400",
+  overdue: "text-sm font-medium text-rose-400",
 };

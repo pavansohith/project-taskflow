@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/Input";
 import { Toggle } from "@/components/ui/Toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { del, get, getErrorMessage } from "@/lib/axios";
+import { del, get } from "@/lib/axios";
+import { getErrorMessage } from "@/lib/errors";
 import {
   clearFilterPreferences,
   getDefaultPriority,

@@ -3,6 +3,7 @@
 import { forwardRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
+import { FieldError } from "@/components/ui/FieldError";
 import { cn } from "@/lib/utils";
 
 export interface PasswordInputProps
@@ -77,15 +78,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             </AnimatePresence>
           </button>
         </div>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-danger-600 dark:text-danger-500"
-          >
-            {error}
-          </motion.p>
-        )}
+        <FieldError message={error} />
       </div>
     );
   }

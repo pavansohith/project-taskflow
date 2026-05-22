@@ -14,19 +14,19 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-primary-600 text-white hover:bg-primary-500 focus-visible:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-400",
+    "bg-primary-600 text-white hover:bg-primary-500 focus-visible:ring-primary-500",
   secondary:
-    "bg-bg-surface text-text-primary ring-1 ring-border hover:bg-bg-elevated focus-visible:ring-primary-500",
+    "border border-border bg-transparent text-text-primary hover:bg-white/5 focus-visible:ring-primary-500 dark:hover:bg-white/5",
   danger:
-    "bg-danger-600 text-white hover:bg-danger-500 focus-visible:ring-danger-500",
+    "border border-danger-500/50 bg-transparent text-danger-500 hover:bg-danger-500/10 focus-visible:ring-danger-500",
   ghost:
-    "bg-transparent text-text-secondary hover:bg-bg-elevated hover:text-text-primary focus-visible:ring-primary-500",
+    "bg-transparent text-text-secondary hover:bg-white/5 hover:text-text-primary focus-visible:ring-primary-500 dark:hover:bg-white/5",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "h-8 gap-1.5 px-3 text-sm",
-  md: "h-10 gap-2 px-4 text-sm",
-  lg: "h-11 gap-2 px-6 text-base",
+  sm: "h-8 gap-1.5 px-3 text-sm [&_svg]:size-3.5",
+  md: "h-8 gap-1.5 px-3 py-1.5 text-sm [&_svg]:size-3.5",
+  lg: "h-9 gap-2 px-4 text-sm",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -50,10 +50,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled ?? isLoading}
         aria-busy={isLoading}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg font-medium transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-          "focus-visible:ring-offset-[var(--ring-offset)] disabled:cursor-not-allowed disabled:opacity-50",
-          "transition-all duration-200 hover:scale-[1.02] hover:brightness-105 active:scale-[0.98] active:brightness-95",
+          "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]",
+          "disabled:cursor-not-allowed disabled:opacity-50",
           variantStyles[variant],
           sizeStyles[size],
           className
@@ -62,8 +61,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && (
           <span
-            className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
-            aria-hidden="true"
+            className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+            aria-hidden
           />
         )}
         {children}

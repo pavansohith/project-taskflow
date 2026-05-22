@@ -64,7 +64,11 @@ export function authenticate(
     };
 
     next();
-  } catch {
-    next(new AppError("Invalid or expired token", 401));
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      next(new AppError("Session expired. Please log in again", 401));
+      return;
+    }
+    next(new AppError("Invalid session. Please log in again", 401));
   }
 }

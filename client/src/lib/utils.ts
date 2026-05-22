@@ -11,6 +11,12 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
+export {
+  getErrorMessage,
+  getFieldErrors,
+  isUnauthorizedError,
+} from "@/lib/errors";
+
 export function formatDate(
   date: string | Date,
   pattern = "MMM d, yyyy"

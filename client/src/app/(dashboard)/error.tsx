@@ -3,7 +3,6 @@
 import { AppErrorContent } from "@/components/errors/AppErrorContent";
 
 export default function DashboardError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -11,9 +10,8 @@ export default function DashboardError({
 }) {
   return (
     <AppErrorContent
-      title="Dashboard error"
-      message="We couldn't load this page. Your sidebar and session are still active — try again or return home."
-      error={error}
+      title="Something went wrong"
+      message="An unexpected error occurred."
       reset={reset}
       showHome
       compact

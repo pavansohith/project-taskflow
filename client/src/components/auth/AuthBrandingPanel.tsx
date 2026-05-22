@@ -22,9 +22,9 @@ export function AuthBrandingPanel() {
         aria-hidden
       />
 
-      <div className="relative z-[1] flex h-full min-h-screen flex-col justify-between p-12">
+      <div className="relative z-[1] flex h-full min-h-screen flex-col p-8 sm:p-10 lg:p-12">
         {/* TOP — Hero */}
-        <header>
+        <header className="shrink-0">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1">
             <span
               className="h-1 w-1 shrink-0 rounded-full bg-indigo-400"
@@ -55,36 +55,27 @@ export function AuthBrandingPanel() {
           </p>
         </header>
 
-        {/* MIDDLE — Feature list */}
-        <ul className="flex flex-col gap-4">
-          {features.map((text) => (
-            <li key={text} className="flex items-start gap-3">
-              <CheckCircle2
-                className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400"
-                strokeWidth={2}
-                aria-hidden
-              />
-              <span className="text-sm font-medium text-white/90">{text}</span>
-            </li>
-          ))}
-        </ul>
+        {/* CENTER — Feature list */}
+        <div className="flex flex-1 items-center justify-center py-8">
+          <ul className="mx-auto flex w-max max-w-full flex-col gap-5 sm:gap-6 lg:gap-7">
+            {features.map((text) => (
+              <li
+                key={text}
+                className="flex items-center gap-3 whitespace-nowrap sm:gap-4"
+              >
+                <CheckCircle2
+                  className="h-5 w-5 shrink-0 text-indigo-400 sm:h-6 sm:w-6 lg:h-7 lg:w-7"
+                  strokeWidth={2}
+                  aria-hidden
+                />
+                <span className="text-[clamp(0.875rem,1.6vw,1.25rem)] font-medium leading-none text-white/90">
+                  {text}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {/* BOTTOM — Testimonial */}
-        <footer className="border-t border-white/10 pt-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/30 text-xs font-medium text-indigo-300">
-              SK
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-white/50">
-                Sarah K., Product Manager
-              </p>
-              <p className="mt-0.5 text-xs text-white/30 italic">
-                TaskFlow cut our planning time in half.
-              </p>
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   );

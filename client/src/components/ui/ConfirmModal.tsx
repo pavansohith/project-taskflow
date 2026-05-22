@@ -114,7 +114,7 @@ export function ConfirmModal({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 w-full max-w-md rounded-2xl border border-border bg-bg-surface p-6 shadow-xl",
+          "relative z-10 w-full max-w-md rounded-xl border border-border bg-bg-surface p-6 shadow-[var(--shadow-modal)]",
           shake && "animate-modal-shake"
         )}
         onClick={(e) => e.stopPropagation()}

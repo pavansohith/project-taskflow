@@ -12,25 +12,34 @@ export interface BadgeProps {
   icon?: React.ReactNode;
 }
 
-const priorityStyles: Record<TaskPriority, string> = {
-  Low: "bg-slate-100 text-slate-700 ring-slate-500/20 dark:bg-slate-800 dark:text-slate-300",
-  Medium:
-    "bg-warning-50 text-warning-700 ring-warning-500/20 dark:bg-warning-700/20 dark:text-warning-500",
-  High: "bg-danger-50 text-danger-700 ring-danger-500/20 dark:bg-danger-500/15 dark:text-danger-500",
+const statusStyles: Record<TaskStatus, { wrap: string; dot: string }> = {
+  Todo: {
+    wrap: "border-slate-600/60 text-slate-400 bg-transparent dark:border-slate-600",
+    dot: "bg-slate-400",
+  },
+  "In Progress": {
+    wrap: "border-indigo-500/50 text-indigo-400 bg-indigo-500/5",
+    dot: "bg-indigo-400",
+  },
+  Completed: {
+    wrap: "border-emerald-500/50 text-emerald-400 bg-emerald-500/5",
+    dot: "bg-emerald-400",
+  },
 };
 
-const priorityDot: Record<TaskPriority, string> = {
-  Low: "bg-slate-500",
-  Medium: "bg-warning-500",
-  High: "bg-danger-500",
-};
-
-const statusStyles: Record<TaskStatus, string> = {
-  Todo: "bg-slate-100 text-slate-700 ring-slate-500/20 dark:bg-slate-800 dark:text-slate-300",
-  "In Progress":
-    "bg-primary-100 text-primary-700 ring-primary-500/20 dark:bg-primary-900/40 dark:text-primary-300",
-  Completed:
-    "bg-success-50 text-success-700 ring-success-500/20 dark:bg-success-700/20 dark:text-success-500",
+const priorityStyles: Record<TaskPriority, { wrap: string; dot: string }> = {
+  Low: {
+    wrap: "border-slate-600/60 text-slate-400 bg-transparent",
+    dot: "bg-slate-400",
+  },
+  Medium: {
+    wrap: "border-amber-500/50 text-amber-400 bg-amber-500/5",
+    dot: "bg-amber-400",
+  },
+  High: {
+    wrap: "border-rose-500/50 text-rose-400 bg-rose-500/5",
+    dot: "bg-rose-400",
+  },
 };
 
 function isPriority(value: TaskPriority | TaskStatus): value is TaskPriority {
@@ -42,28 +51,25 @@ export function Badge({
   kind,
   value,
   className,
-  showDot = false,
+  showDot = true,
   icon,
 }: BadgeProps) {
-  const colorClass =
+  const styles =
     kind === "priority" && isPriority(value)
       ? priorityStyles[value]
       : statusStyles[value as TaskStatus];
 
-  const dotClass =
-    kind === "priority" && isPriority(value) ? priorityDot[value] : undefined;
-
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
-        colorClass,
+        "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium",
+        styles.wrap,
         className
       )}
     >
-      {showDot && dotClass && (
+      {showDot && !icon && (
         <span
-          className={cn("h-1.5 w-1.5 shrink-0 rounded-full", dotClass)}
+          className={cn("h-1 w-1 shrink-0 rounded-full", styles.dot)}
           aria-hidden
         />
       )}

@@ -74,6 +74,8 @@ export function StatusPopover({
           kind="status"
           value={status}
           icon={statusIcons[status]}
+          className="gap-1.5 px-2.5 py-1"
+          showDot
         />
       </button>
 
@@ -84,7 +86,7 @@ export function StatusPopover({
           initial="initial"
           animate="animate"
           exit="exit"
-          className="absolute left-0 top-full z-30 mt-1 min-w-[160px] overflow-hidden rounded-xl border border-border bg-bg-surface py-1 shadow-lg"
+          className="absolute left-0 top-full z-30 mt-1 min-w-[160px] overflow-hidden rounded-md border border-border bg-bg-surface py-1 shadow-[var(--shadow-modal)]"
         >
           {STATUS_OPTIONS.map((option) => (
             <li key={option} role="option" aria-selected={option === status}>

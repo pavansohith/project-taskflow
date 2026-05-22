@@ -5,14 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  CheckSquare,
   LayoutDashboard,
-  LogOut,
   PanelLeftClose,
   Settings,
   User,
 } from "lucide-react";
-import { appToast } from "@/lib/toast";
+import { TaskFlowLogo } from "@/components/layout/TaskFlowLogo";
 import { fadeOverlay, slideInRight } from "@/lib/motion";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -23,12 +21,6 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-interface SidebarProps {
-  mobileOpen?: boolean;
-  onMobileClose?: () => void;
-  collapsed?: boolean;
-}
-
 function getInitials(name: string): string {
   return name
     .split(/\s+/)
@@ -36,6 +28,12 @@ function getInitials(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+  collapsed?: boolean;
 }
 
 function SidebarPanel({
@@ -48,92 +46,81 @@ function SidebarPanel({
   showClose?: boolean;
 }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
-
-  const handleLogout = async () => {
-    onMobileClose?.();
-    await logout();
-    appToast.success("Logged out");
-  };
+  const { user } = useAuth();
 
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-slate-200 bg-white transition-[width] duration-300 ease-out dark:border-border dark:bg-bg-surface",
-        collapsed ? "w-[72px]" : "w-60"
+        "flex h-full flex-col border-r border-[#1f2d45] bg-[#111827] transition-[width] duration-200",
+        collapsed ? "w-[56px]" : "w-[220px]"
       )}
     >
-      {showClose && (
-        <div className="flex items-center justify-end p-3">
-          <button
-            type="button"
-            onClick={onMobileClose}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-text-muted hover:bg-bg-elevated"
-            aria-label="Close menu"
-          >
-            <PanelLeftClose className="h-5 w-5" />
-          </button>
-        </div>
-      )}
-
-      <nav className="flex flex-1 flex-col gap-1 p-3">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || pathname.startsWith(`${href}/`);
-          return (
-            <Link
-              key={label}
-              href={href}
-              onClick={() => onMobileClose?.()}
-              title={collapsed ? label : undefined}
-              className={cn(
-                "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
-                collapsed && "justify-center px-2",
-                isActive
-                  ? "bg-indigo-50 font-semibold text-indigo-700 dark:bg-primary-900/40 dark:text-primary-200"
-                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:text-text-secondary dark:hover:bg-bg-elevated dark:hover:text-text-primary"
-              )}
+      <div className="flex h-14 shrink-0 items-center px-4">
+        {showClose ? (
+          <div className="flex w-full items-center justify-between">
+            <TaskFlowLogo iconOnly={collapsed} />
+            <button
+              type="button"
+              onClick={onMobileClose}
+              className="flex h-8 w-8 items-center justify-center rounded-md text-white/50 hover:bg-white/5"
+              aria-label="Close menu"
             >
-              <Icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{label}</span>}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="border-t border-border p-3">
-        {user && !collapsed && (
-          <div className="mb-3 rounded-xl bg-bg-elevated p-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 dark:bg-primary-900/50 dark:text-primary-200">
-                {getInitials(user.name)}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-text-primary">
-                  {user.name}
-                </p>
-                <p className="truncate text-xs text-text-muted">{user.email}</p>
-              </div>
-            </div>
+              <PanelLeftClose className="h-4 w-4" strokeWidth={1.5} />
+            </button>
           </div>
-        )}
-        <button
-          type="button"
-          onClick={() => void handleLogout()}
-          className={cn(
-            "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-elevated hover:text-danger-600",
-            collapsed && "justify-center px-2"
-          )}
-        >
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Logout</span>}
-        </button>
-        {!collapsed && (
-          <div className="mt-3 flex items-center gap-2 px-1 text-xs text-text-muted">
-            <CheckSquare className="h-3.5 w-3.5" />
-            Task management
-          </div>
+        ) : (
+          <TaskFlowLogo iconOnly={collapsed} />
         )}
       </div>
+
+      <nav className="mt-6 flex-1 px-2">
+        {!collapsed && (
+          <p className="mb-1 mt-6 px-5 text-[10px] font-semibold tracking-[0.15em] text-white/20 uppercase">
+            Navigation
+          </p>
+        )}
+        <ul className="space-y-0.5">
+          {navItems.map(({ href, label, icon: Icon }) => {
+            const isActive =
+              pathname === href || pathname.startsWith(`${href}/`);
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  onClick={() => onMobileClose?.()}
+                  title={collapsed ? label : undefined}
+                  className={cn(
+                    "mx-2 flex h-9 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors",
+                    collapsed && "mx-0 justify-center px-0",
+                    isActive
+                      ? "border-l-2 border-indigo-500 bg-indigo-500/10 pl-[10px] font-semibold text-indigo-400"
+                      : "border-l-2 border-transparent text-white/50 hover:bg-white/5 hover:text-white/80"
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+                  {!collapsed && <span>{label}</span>}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {user && !collapsed && (
+        <div className="border-t border-[#1f2d45] p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+              {getInitials(user.name)}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-white/80">
+                {user.name}
+              </p>
+              <p className="truncate text-xs text-white/30">{user.email}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
@@ -153,7 +140,7 @@ export function Sidebar({
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  const effectiveCollapsed = collapsed && !isLg;
+  const effectiveCollapsed = collapsed && isLg;
 
   return (
     <>
@@ -170,7 +157,7 @@ export function Sidebar({
               initial="initial"
               animate="animate"
               exit="exit"
-              className="fixed inset-0 z-40 bg-[var(--overlay)] md:hidden"
+              className="fixed inset-0 z-40 bg-[var(--overlay)] lg:hidden"
               aria-label="Close menu overlay"
               onClick={onMobileClose}
             />
@@ -179,7 +166,7 @@ export function Sidebar({
               initial="initial"
               animate="animate"
               exit="exit"
-              className="fixed inset-y-0 right-0 z-50 lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 lg:hidden"
             >
               <SidebarPanel
                 collapsed={false}

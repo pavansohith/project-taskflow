@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface AppErrorContentProps {
@@ -15,7 +15,7 @@ interface AppErrorContentProps {
 
 export function AppErrorContent({
   title = "Something went wrong",
-  message = "An unexpected error occurred. Please try again.",
+  message = "An unexpected error occurred.",
   error,
   reset,
   showHome = true,
@@ -28,16 +28,18 @@ export function AppErrorContent({
       className={
         compact
           ? "flex flex-col items-center justify-center px-4 py-12 text-center"
-          : "flex min-h-[60vh] flex-col items-center justify-center px-4 py-16 text-center"
+          : "flex min-h-[60vh] flex-col items-center justify-center bg-[#0a0f1e] px-4 py-16 text-center"
       }
     >
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-danger-500 shadow-lg">
-        <AlertTriangle className="h-8 w-8 text-white" aria-hidden />
-      </div>
-      <h1 className="text-heading-2">{title}</h1>
-      <p className="mt-2 max-w-md text-body">{message}</p>
+      <AlertCircle
+        className="h-12 w-12 text-rose-400"
+        strokeWidth={1.5}
+        aria-hidden
+      />
+      <h1 className="mt-4 text-xl font-semibold text-white">{title}</h1>
+      <p className="mt-2 max-w-md text-sm text-white/40">{message}</p>
       {isDev && error?.message && (
-        <pre className="mt-4 max-w-lg overflow-x-auto rounded-lg bg-bg-elevated p-3 text-left text-xs text-danger-600">
+        <pre className="mt-4 max-w-lg overflow-x-auto rounded-lg bg-rose-950/20 p-3 text-left text-xs text-rose-300">
           {error.message}
         </pre>
       )}
@@ -50,7 +52,7 @@ export function AppErrorContent({
         {showHome && (
           <Link
             href="/dashboard"
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-bg-surface px-4 text-sm font-medium text-text-primary ring-1 ring-border transition-all hover:bg-bg-elevated"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-white/10 px-4 text-sm font-medium text-white/70 transition-colors hover:bg-white/5"
           >
             Go home
           </Link>

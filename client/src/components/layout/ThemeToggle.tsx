@@ -15,30 +15,30 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={label}
       title={label}
-      className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-text-secondary transition-ring hover:bg-bg-elevated hover:text-text-primary active:scale-[0.98]"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white/50 transition-colors hover:bg-white/5 hover:text-white/80"
     >
       <AnimatePresence mode="wait" initial={false}>
         {isDark ? (
           <motion.span
             key="sun"
-            initial={{ rotate: -90, scale: 0, opacity: 0 }}
-            animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: 90, scale: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={{ rotate: -45, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: 45, opacity: 0 }}
+            transition={{ duration: 0.15 }}
             className="inline-flex"
           >
-            <Sun className="h-5 w-5 text-warning-500" aria-hidden />
+            <Sun className="h-5 w-5" strokeWidth={1.5} aria-hidden />
           </motion.span>
         ) : (
           <motion.span
             key="moon"
-            initial={{ rotate: 90, scale: 0, opacity: 0 }}
-            animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: -90, scale: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={{ rotate: 45, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: -45, opacity: 0 }}
+            transition={{ duration: 0.15 }}
             className="inline-flex"
           >
-            <Moon className="h-5 w-5 text-primary-600" aria-hidden />
+            <Moon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
           </motion.span>
         )}
       </AnimatePresence>
