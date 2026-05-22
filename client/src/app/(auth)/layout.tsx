@@ -9,10 +9,10 @@ export default function AuthLayout({
 }) {
   return (
     <AuthGuard mode="guest">
-      <div className="flex min-h-screen bg-bg-base">
+      <div className="flex min-h-screen">
         <AuthBrandingPanel />
-        <div className="flex flex-1 flex-col items-center justify-center px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <div className="w-full max-w-md">
+        <div className="flex min-h-screen flex-1 flex-col items-center justify-center bg-[#0a0f1e] px-4 py-8 sm:px-6 lg:px-10">
+          <div className="w-full max-w-sm">
             <AuthPageTransition>{children}</AuthPageTransition>
           </div>
         </div>

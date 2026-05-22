@@ -17,6 +17,12 @@ import { fadeInUp } from "@/lib/motion";
 import { getErrorMessage } from "@/lib/axios";
 import { loginSchema, type LoginFormValues } from "@/lib/validators";
 
+const authFormShell =
+  "[&_label]:text-sm [&_label]:font-medium [&_label]:text-white/70";
+
+const authInputClass =
+  "h-10 rounded-md border-[#1f2d45] bg-[#0a0f1e] text-sm text-white placeholder:text-white/30 focus:border-indigo-500 focus:ring-0 focus:outline-none";
+
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
@@ -52,11 +58,13 @@ export default function LoginPage() {
         variants={fadeInUp}
         initial="initial"
         animate="animate"
-        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-border dark:bg-bg-surface"
+        className={`w-full max-w-sm rounded-xl border border-[#1f2d45] bg-[#111827] p-8 ${authFormShell}`}
       >
         <div className="mb-8">
-          <h1 className="text-heading-2">Welcome back</h1>
-          <p className="mt-2 text-body">Sign in to your TaskFlow account</p>
+          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+          <p className="mt-2 text-sm text-white/50">
+            Sign in to your TaskFlow account
+          </p>
         </div>
 
         <motion.form
@@ -70,26 +78,28 @@ export default function LoginPage() {
             type="email"
             autoComplete="email"
             error={errors.email?.message}
+            className={authInputClass}
             {...register("email")}
           />
           <PasswordInput
             label="Password"
             autoComplete="current-password"
             error={errors.password?.message}
+            className={authInputClass}
             {...register("password")}
           />
 
           <div className="flex items-center justify-between gap-4">
-            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-text-secondary">
+            <label className="flex min-h-10 cursor-pointer items-center gap-2 text-sm text-white/50">
               <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-border text-primary-600 focus:ring-primary-500/50"
+                className="h-4 w-4 rounded border-[#1f2d45] bg-[#0a0f1e] text-indigo-600 focus:ring-0"
               />
               Remember me
             </label>
             <Link
               href="#"
-              className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
+              className="text-sm font-medium text-indigo-400 hover:text-indigo-300"
               onClick={(e) => e.preventDefault()}
             >
               Forgot password?
@@ -98,7 +108,7 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            className="h-11 w-full"
+            className="h-10 w-full rounded-md bg-indigo-600 text-sm font-semibold shadow-none hover:bg-indigo-500"
             isLoading={isSubmitting && !success}
             disabled={success}
           >
@@ -110,7 +120,7 @@ export default function LoginPage() {
                   animate={{ scale: 1 }}
                   className="inline-flex items-center gap-2"
                 >
-                  <Check className="h-5 w-5" />
+                  <Check className="h-4 w-4" />
                   Signed in!
                 </motion.span>
               ) : (
@@ -121,11 +131,11 @@ export default function LoginPage() {
             </AnimatePresence>
           </Button>
 
-          <p className="text-center text-sm text-text-secondary">
+          <p className="text-center text-sm text-white/50">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="font-medium text-primary-600 hover:underline dark:text-primary-400"
+              className="font-medium text-indigo-400 hover:underline"
             >
               Register
             </Link>
