@@ -25,7 +25,7 @@ function formatActivityMessage(item: TaskActivityItem) {
   if (label === "Created") {
     return (
       <>
-        New task <span className="font-medium text-white">&apos;{title}&apos;</span>{" "}
+        New task <span className="font-medium text-text-primary">&apos;{title}&apos;</span>{" "}
         created
       </>
     );
@@ -33,7 +33,7 @@ function formatActivityMessage(item: TaskActivityItem) {
 
   return (
     <>
-      <span className="font-medium text-white">&apos;{title}&apos;</span> marked as{" "}
+      <span className="font-medium text-text-primary">&apos;{title}&apos;</span> marked as{" "}
       {label}
     </>
   );
@@ -42,20 +42,20 @@ function formatActivityMessage(item: TaskActivityItem) {
 function ActivitySkeleton() {
   return (
     <div
-      className="rounded-xl border border-[#1f2d45] bg-[#111827] p-6"
+      className="rounded-xl border border-border bg-bg-surface p-6 shadow-[var(--shadow-card)] dark:shadow-none"
       aria-busy="true"
       aria-label="Loading recent activity"
     >
       <div className="mb-5 flex items-center justify-between">
-        <div className="h-4 w-28 animate-pulse rounded bg-white/10" />
-        <div className="h-3 w-12 animate-pulse rounded bg-white/10" />
+        <div className="h-4 w-28 animate-pulse rounded bg-border" />
+        <div className="h-3 w-12 animate-pulse rounded bg-border" />
       </div>
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex gap-3 border-b border-white/5 py-3 last:border-b-0">
-          <div className="h-2 w-2 animate-pulse rounded-full bg-white/10" />
+        <div key={i} className="flex gap-3 border-b border-border py-3 last:border-b-0">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-border" />
           <div className="flex-1 space-y-2">
-            <div className="h-3 w-full animate-pulse rounded bg-white/10" />
-            <div className="h-2 w-16 animate-pulse rounded bg-white/10" />
+            <div className="h-3 w-full animate-pulse rounded bg-border" />
+            <div className="h-2 w-16 animate-pulse rounded bg-border" />
           </div>
         </div>
       ))}
@@ -79,12 +79,12 @@ export const RecentActivity = memo(function RecentActivity({
 
   return (
     <section>
-      <div className="rounded-xl border border-[#1f2d45] bg-[#111827] p-6">
+      <div className="rounded-xl border border-border bg-bg-surface p-6 shadow-[var(--shadow-card)] dark:shadow-none">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white">Recent Activity</h2>
+          <h2 className="text-sm font-semibold text-text-primary">Recent Activity</h2>
           <button
             type="button"
-            className="cursor-pointer text-xs text-indigo-400 transition-colors hover:text-indigo-300"
+            className="cursor-pointer text-xs text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
             aria-label="View all activity (coming soon)"
           >
             View all
@@ -107,8 +107,8 @@ export const RecentActivity = memo(function RecentActivity({
 
         {!error && activity.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8">
-            <Inbox className="h-8 w-8 text-white/10" strokeWidth={1.5} aria-hidden />
-            <p className="mt-2 text-sm text-white/20">No activity yet</p>
+            <Inbox className="h-8 w-8 text-text-muted/40" strokeWidth={1.5} aria-hidden />
+            <p className="mt-2 text-sm text-text-muted">No activity yet</p>
           </div>
         )}
 
@@ -121,7 +121,7 @@ export const RecentActivity = memo(function RecentActivity({
                   key={`${item.updatedAt}-${index}`}
                   className={cn(
                     "flex items-start gap-3 py-3",
-                    !isLast && "border-b border-white/5"
+                    !isLast && "border-b border-border"
                   )}
                 >
                   <div className="flex w-2 shrink-0 flex-col items-center self-stretch">
@@ -140,10 +140,10 @@ export const RecentActivity = memo(function RecentActivity({
                     )}
                   </div>
                   <div className="min-w-0 flex-1 pb-1">
-                    <p className="text-sm text-white/80">
+                    <p className="text-sm text-text-secondary">
                       {formatActivityMessage(item)}
                     </p>
-                    <p className="mt-0.5 text-xs text-white/30">
+                    <p className="mt-0.5 text-xs text-text-muted">
                       {formatRelativeDate(item.updatedAt)}
                     </p>
                   </div>

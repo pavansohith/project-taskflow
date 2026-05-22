@@ -27,12 +27,12 @@ export function ErrorState({
       role="alert"
     >
       <WifiOff
-        className="h-8 w-8 text-rose-400/50"
+        className="h-8 w-8 text-rose-500/50"
         strokeWidth={1.5}
         aria-hidden
       />
-      <h3 className="mt-3 text-sm font-medium text-white/60">{title}</h3>
-      <p className="mt-1 max-w-md text-xs text-white/30">{message}</p>
+      <h3 className="mt-3 text-sm font-medium text-text-secondary">{title}</h3>
+      <p className="mt-1 max-w-md text-xs text-text-muted">{message}</p>
       <Button
         variant="secondary"
         type="button"

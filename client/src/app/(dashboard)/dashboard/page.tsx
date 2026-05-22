@@ -34,7 +34,7 @@ import type { ITask, TaskStatus } from "@/types";
 function DashboardSectionHeading({ title }: { title: string }) {
   return (
     <div className="mb-5 flex items-center gap-3">
-      <span className="shrink-0 text-xs font-semibold tracking-[0.12em] text-white/30 uppercase">
+      <span className="shrink-0 text-xs font-semibold tracking-[0.12em] text-text-muted uppercase">
         {title}
       </span>
       <div className="h-px flex-1 bg-white/5" />
@@ -193,20 +193,20 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
             {greeting}
           </h1>
-          <p className="mt-2 text-base text-white/50">
+          <p className="mt-2 text-base text-text-muted">
             Here&apos;s what&apos;s happening with your tasks today.
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-5 py-3">
+        <div className="flex shrink-0 items-center gap-2.5 rounded-lg border border-border bg-bg-surface px-5 py-3 shadow-[var(--shadow-card)] dark:shadow-none">
           <CalendarDays
             className="h-4 w-4 shrink-0 text-indigo-400"
             strokeWidth={1.5}
             aria-hidden
           />
-          <span className="text-base font-medium text-white/70">{todayLabel}</span>
+          <span className="text-base font-medium text-text-secondary">{todayLabel}</span>
         </div>
       </header>
 
@@ -216,10 +216,11 @@ export default function DashboardPage() {
           variants={staggerContainer}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
-          <motion.div variants={staggerItem}>
+          <motion.div variants={staggerItem} className="h-full">
             <StatsCard
+              className="h-full"
               title="Total"
               value={stats.total}
               icon={ListTodo}
@@ -227,12 +228,13 @@ export default function DashboardPage() {
               trend={totalTrend}
               isLoading={statsLoading}
               error={statsSharedError}
-              onRetry={refetch}
+              onRetry={() => void refetch(false)}
               celebrate={celebrateTotal}
             />
           </motion.div>
-          <motion.div variants={staggerItem}>
+          <motion.div variants={staggerItem} className="h-full">
             <StatsCard
+              className="h-full"
               title="Completed"
               value={stats.completed}
               icon={CheckCircle2}
@@ -240,11 +242,12 @@ export default function DashboardPage() {
               trend={completedTrend}
               isLoading={statsLoading}
               error={statsSharedError}
-              onRetry={refetch}
+              onRetry={() => void refetch(false)}
             />
           </motion.div>
-          <motion.div variants={staggerItem}>
+          <motion.div variants={staggerItem} className="h-full">
             <StatsCard
+              className="h-full"
               title="Pending"
               value={stats.pending}
               icon={Circle}
@@ -252,11 +255,12 @@ export default function DashboardPage() {
               trend={pollTrend}
               isLoading={statsLoading}
               error={statsSharedError}
-              onRetry={refetch}
+              onRetry={() => void refetch(false)}
             />
           </motion.div>
-          <motion.div variants={staggerItem}>
+          <motion.div variants={staggerItem} className="h-full">
             <StatsCard
+              className="h-full"
               title="In Progress"
               value={stats.inProgress}
               icon={Clock}
@@ -264,7 +268,7 @@ export default function DashboardPage() {
               trend={pollTrend}
               isLoading={statsLoading}
               error={statsSharedError}
-              onRetry={refetch}
+              onRetry={() => void refetch(false)}
             />
           </motion.div>
         </motion.div>
@@ -279,11 +283,11 @@ export default function DashboardPage() {
 
       <section>
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs font-semibold tracking-[0.12em] text-white/30 uppercase">
+          <span className="text-xs font-semibold tracking-[0.12em] text-text-muted uppercase">
             Tasks
           </span>
           <div className="flex items-center gap-4">
-            <span className="text-xs text-white/30">{taskCountLabel}</span>
+            <span className="text-xs text-text-muted">{taskCountLabel}</span>
             <button
               type="button"
               onClick={handleOpenCreate}
@@ -294,9 +298,9 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
-        <div className="mb-6 h-px w-full bg-white/5" aria-hidden />
+        <div className="mb-6 h-px w-full bg-border-subtle" aria-hidden />
 
-        <div className="overflow-hidden rounded-xl border border-[#1f2d45] bg-[#111827]">
+        <div className="overflow-hidden rounded-xl border border-border bg-bg-surface shadow-[var(--shadow-card)] dark:shadow-none">
           <FilterBar
             embedded
             search={search}

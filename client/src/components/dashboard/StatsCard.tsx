@@ -47,22 +47,25 @@ interface StatsCardProps {
   className?: string;
 }
 
+const CARD_HEIGHT_CLASS = "min-h-[130px]";
+
 function StatsCardSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative min-h-[130px] overflow-hidden rounded-xl border border-[#1f2d45] bg-[#111827] p-6",
+        "relative flex flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-6",
+        CARD_HEIGHT_CLASS,
         className
       )}
       aria-busy="true"
       aria-label="Loading stat"
     >
       <div className="flex items-start justify-between">
-        <div className="h-3 w-16 animate-pulse rounded bg-white/10" />
-        <div className="h-[18px] w-[18px] animate-pulse rounded bg-white/10" />
+        <div className="h-3 w-16 animate-pulse rounded bg-border" />
+        <div className="h-[18px] w-[18px] animate-pulse rounded bg-border" />
       </div>
-      <div className="mt-4 h-10 w-20 animate-pulse rounded bg-white/10" />
-      <div className="mt-2 h-3 w-24 animate-pulse rounded bg-white/10" />
+      <div className="mt-4 h-10 w-20 animate-pulse rounded bg-border" />
+      <div className="mt-2 h-4 w-24 shrink-0 animate-pulse rounded bg-border" />
     </div>
   );
 }
@@ -90,7 +93,8 @@ export const StatsCard = memo(function StatsCard({
   return (
     <div
       className={cn(
-        "relative min-h-[130px] cursor-default overflow-hidden rounded-xl border border-[#1f2d45] bg-[#111827] p-6 transition-all duration-200 ease-out dark:shadow-none",
+        "relative flex cursor-default flex-col overflow-hidden rounded-xl border border-border bg-bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-200 ease-out dark:shadow-none",
+        CARD_HEIGHT_CLASS,
         config.hoverBorder,
         "hover:-translate-y-0.5",
         celebrate && "animate-stat-celebrate",
@@ -121,29 +125,31 @@ export const StatsCard = memo(function StatsCard({
         />
       </div>
 
-      <p className="relative mt-4 text-4xl font-bold text-white tabular-nums">
+      <p className="relative mt-4 text-4xl font-bold text-text-primary tabular-nums">
         {showError ? "—" : value}
       </p>
 
-      {showTrend && (
-        <p className="relative mt-2 text-xs text-white/40">{trend}</p>
-      )}
-
-      {showError && (
-        <div className="relative mt-2 flex items-center gap-2">
-          <span className="text-xs text-rose-400">Failed to load</span>
-          {onRetry && (
-            <button
-              type="button"
-              onClick={onRetry}
-              className="inline-flex items-center gap-1 text-xs font-medium text-rose-400 hover:underline"
-            >
-              <RefreshCw className="h-3 w-3" />
-              Retry
-            </button>
-          )}
-        </div>
-      )}
+      {/* Reserved height so cards stay equal when trend text appears/disappears */}
+      <div className="relative mt-2 min-h-5 shrink-0">
+        {showTrend && (
+          <p className="text-xs leading-5 text-text-muted">{trend}</p>
+        )}
+        {showError && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-rose-400">Failed to load</span>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="inline-flex items-center gap-1 text-xs font-medium text-rose-400 hover:underline"
+              >
+                <RefreshCw className="h-3 w-3" />
+                Retry
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 });

@@ -80,6 +80,7 @@ export function useTaskStats() {
     isLoading,
     error,
     justPolled,
-    refetch: () => fetchStats(),
+    /** Silent by default so polling/updates do not swap cards to skeletons */
+    refetch: (silent = true) => fetchStats(silent),
   };
 }

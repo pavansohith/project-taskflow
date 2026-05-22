@@ -51,10 +51,10 @@ const priorityDot: Record<TaskPriority, string> = {
 };
 
 const filterBtnClass =
-  "inline-flex h-[34px] min-w-[100px] items-center justify-between gap-2 rounded-md border border-[#1f2d45] bg-[#0a0f1e] px-3 text-sm text-white/60 transition-colors hover:border-indigo-500/30";
+  "inline-flex h-[34px] min-w-[100px] items-center justify-between gap-2 rounded-md border border-border bg-bg-base px-3 text-sm text-text-secondary transition-colors hover:border-indigo-500/50";
 
 const filterInputClass =
-  "h-[34px] w-[240px] max-w-full rounded-md border border-[#1f2d45] bg-[#0a0f1e] py-0 pr-8 pl-9 text-sm text-white placeholder:text-white/30 transition-colors focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/30";
+  "h-[34px] w-[240px] max-w-full rounded-md border border-border bg-bg-base py-0 pr-8 pl-9 text-sm text-text-primary placeholder:text-text-muted transition-colors focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/30";
 
 function FilterDropdown<T extends string>({
   label,
@@ -91,7 +91,7 @@ function FilterDropdown<T extends string>({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           filterBtnClass,
-          isActive && "border-indigo-500/50 text-white/90"
+          isActive && "border-indigo-500/50 text-text-primary"
         )}
       >
         <span className="flex items-center gap-1.5 truncate">
@@ -104,10 +104,10 @@ function FilterDropdown<T extends string>({
             {isActive ? selected.label : label}
           </span>
         </span>
-        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" strokeWidth={1.5} />
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-text-muted" strokeWidth={1.5} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 z-30 mt-1 min-w-full overflow-hidden rounded-md border border-[#1f2d45] bg-[#111827] py-1 shadow-lg">
+        <div className="absolute top-full left-0 z-30 mt-1 min-w-full overflow-hidden rounded-md border border-border bg-bg-surface py-1 shadow-[var(--shadow-modal)]">
           {options.map((opt) => (
             <button
               key={opt.value}
@@ -117,10 +117,10 @@ function FilterDropdown<T extends string>({
                 setOpen(false);
               }}
               className={cn(
-                "flex w-full px-3 py-2 text-left text-sm transition-colors hover:bg-white/5",
+                "flex w-full px-3 py-2 text-left text-sm transition-colors hover:bg-bg-elevated",
                 value === opt.value
-                  ? "font-medium text-indigo-400"
-                  : "text-white/60"
+                  ? "font-medium text-indigo-600 dark:text-indigo-400"
+                  : "text-text-secondary"
               )}
             >
               {opt.label}
@@ -150,14 +150,14 @@ export const FilterBar = memo(function FilterBar({
       className={cn(
         "flex flex-col gap-3 sm:flex-row sm:items-center",
         embedded
-          ? "border-b border-[#1f2d45] px-5 py-4"
+          ? "border-b border-border px-5 py-4"
           : "mb-4 sm:justify-between"
       )}
     >
       <div className="flex flex-1 flex-wrap items-center gap-3">
         <div className="relative w-full sm:w-auto">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30"
+            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted"
             strokeWidth={1.5}
             aria-hidden
           />
@@ -173,7 +173,7 @@ export const FilterBar = memo(function FilterBar({
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-white/40 hover:bg-white/10"
+              className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-text-muted hover:bg-bg-elevated"
               aria-label="Clear search"
             >
               <X className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -206,14 +206,14 @@ export const FilterBar = memo(function FilterBar({
           <button
             type="button"
             onClick={onClear}
-            className="text-xs font-medium text-white/40 hover:text-white/70"
+            className="text-xs font-medium text-text-muted hover:text-text-primary"
           >
             Clear
           </button>
         )}
       </div>
 
-      <p className="shrink-0 text-xs text-white/30 sm:ml-auto">
+      <p className="shrink-0 text-xs text-text-muted sm:ml-auto">
         {isLoading ? "Loading…" : `${total} task${total === 1 ? "" : "s"}`}
       </p>
     </div>

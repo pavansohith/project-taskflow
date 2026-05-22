@@ -13,7 +13,7 @@ interface PaginationProps {
 }
 
 const pageBtnClass =
-  "inline-flex h-[30px] items-center gap-1 rounded-md border border-[#1f2d45] bg-[#0a0f1e] px-3 text-xs font-medium text-white/70 transition-colors hover:border-indigo-500/50 hover:text-indigo-400 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-[#1f2d45] disabled:hover:text-white/70";
+  "inline-flex h-[30px] items-center gap-1 rounded-md border border-border bg-bg-base px-3 text-xs font-medium text-text-secondary transition-colors hover:border-indigo-500/50 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-border disabled:hover:text-text-secondary dark:hover:text-indigo-400";
 
 export function Pagination({
   page,
@@ -29,11 +29,11 @@ export function Pagination({
     <div
       className={cn(
         "flex flex-col items-center justify-between gap-3 sm:flex-row",
-        embedded && "border-t border-[#1f2d45] px-5 py-3",
+        embedded && "border-t border-border px-5 py-3",
         className
       )}
     >
-      <p className="text-xs text-white/30">
+      <p className="text-xs text-text-muted">
         Page {page} of {Math.max(totalPages, 1)} · {total} task
         {total !== 1 ? "s" : ""} total
       </p>

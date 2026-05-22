@@ -43,7 +43,7 @@ function RowActions({
   disabled?: boolean;
 }) {
   const btn =
-    "flex h-7 w-7 items-center justify-center rounded-md text-white/40 opacity-100 transition-all duration-150 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-white/10 hover:text-white/80 disabled:opacity-40";
+    "flex h-7 w-7 items-center justify-center rounded-md text-text-muted opacity-100 transition-all duration-150 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-bg-elevated hover:text-text-primary disabled:opacity-40";
 
   return (
     <div className="flex items-center justify-end gap-0.5">
@@ -94,15 +94,15 @@ function TaskCardMobile({
     <motion.article
       variants={staggerItem}
       className={cn(
-        "group border-b border-[#1f2d45] px-5 py-4 last:border-b-0",
+        "group border-b border-border px-5 py-4 last:border-b-0",
         overdue && "border-l-2 border-l-rose-500"
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-medium text-white/90">{task.title}</h3>
+          <h3 className="text-sm font-medium text-text-primary">{task.title}</h3>
           {task.description && (
-            <p className="mt-0.5 line-clamp-2 text-xs text-white/30">
+            <p className="mt-0.5 line-clamp-2 text-xs text-text-muted">
               {task.description}
             </p>
           )}
@@ -161,7 +161,7 @@ export const TaskTable = memo(function TaskTable({
   };
 
   const thClass =
-    "px-5 py-3 text-left text-[11px] font-semibold tracking-widest text-white/30 uppercase";
+    "px-5 py-3 text-left text-[11px] font-semibold tracking-widest text-text-muted uppercase";
 
   return (
     <>
@@ -185,11 +185,11 @@ export const TaskTable = memo(function TaskTable({
         ))}
       </motion.div>
 
-      <div className={cn("hidden lg:block", !embedded && "overflow-hidden rounded-xl border border-[#1f2d45]")}>
+      <div className={cn("hidden lg:block", !embedded && "overflow-hidden rounded-xl border border-border shadow-[var(--shadow-card)] dark:shadow-none")}>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-[#1f2d45] bg-[#0d1526]">
+              <tr className="border-b border-border bg-bg-elevated">
                 <th className={thClass}>Title</th>
                 <th className={thClass}>Status</th>
                 <th className={thClass}>Priority</th>
@@ -207,16 +207,16 @@ export const TaskTable = memo(function TaskTable({
                     key={task._id}
                     variants={staggerItem}
                     className={cn(
-                      "group border-b border-[#1f2d45] transition-colors duration-150 last:border-b-0 hover:bg-white/[0.02]",
+                      "group border-b border-border transition-colors duration-150 last:border-b-0 hover:bg-bg-elevated",
                       overdue && "border-l-2 border-l-rose-500"
                     )}
                   >
                     <td className="px-5 py-4">
-                      <p className="text-sm font-medium text-white/90">
+                      <p className="text-sm font-medium text-text-primary">
                         {task.title}
                       </p>
                       {task.description && (
-                        <p className="mt-0.5 max-w-xs truncate text-xs text-white/30">
+                        <p className="mt-0.5 max-w-xs truncate text-xs text-text-muted">
                           {task.description}
                         </p>
                       )}

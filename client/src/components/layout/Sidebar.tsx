@@ -10,7 +10,6 @@ import {
   Settings,
   User,
 } from "lucide-react";
-import { TaskFlowLogo } from "@/components/layout/TaskFlowLogo";
 import { fadeOverlay, slideInRight } from "@/lib/motion";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -51,35 +50,30 @@ function SidebarPanel({
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-[#1f2d45] bg-[#111827] transition-[width] duration-200",
+        "flex h-full flex-col border-r border-border bg-bg-surface transition-[width] duration-200",
         collapsed ? "w-[56px]" : "w-[220px]"
       )}
     >
-      <div className="flex h-14 shrink-0 items-center px-4">
-        {showClose ? (
-          <div className="flex w-full items-center justify-between">
-            <TaskFlowLogo iconOnly={collapsed} />
-            <button
-              type="button"
-              onClick={onMobileClose}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-white/50 hover:bg-white/5"
-              aria-label="Close menu"
-            >
-              <PanelLeftClose className="h-4 w-4" strokeWidth={1.5} />
-            </button>
-          </div>
-        ) : (
-          <TaskFlowLogo iconOnly={collapsed} />
-        )}
-      </div>
+      {showClose && (
+        <div className="flex shrink-0 justify-end px-3 pt-3">
+          <button
+            type="button"
+            onClick={onMobileClose}
+            className="flex h-9 w-9 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text-primary"
+            aria-label="Close menu"
+          >
+            <PanelLeftClose className="h-5 w-5" strokeWidth={1.5} />
+          </button>
+        </div>
+      )}
 
-      <nav className="mt-6 flex-1 px-2">
+      <nav className={cn("flex-1 px-3", showClose ? "pt-2" : "pt-5")}>
         {!collapsed && (
-          <p className="mb-1 mt-6 px-5 text-[10px] font-semibold tracking-[0.15em] text-white/20 uppercase">
+          <p className="mb-2 px-3 text-[10px] font-semibold tracking-[0.15em] text-text-muted uppercase">
             Navigation
           </p>
         )}
-        <ul className="space-y-0.5">
+        <ul className="flex flex-col gap-1">
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive =
               pathname === href || pathname.startsWith(`${href}/`);
@@ -90,15 +84,25 @@ function SidebarPanel({
                   onClick={() => onMobileClose?.()}
                   title={collapsed ? label : undefined}
                   className={cn(
-                    "mx-2 flex h-9 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors",
-                    collapsed && "mx-0 justify-center px-0",
+                    "flex w-full items-center rounded-md border-l-2 transition-colors",
+                    collapsed
+                      ? "h-10 justify-center gap-0 border-transparent px-0"
+                      : "h-10 gap-3 px-3",
                     isActive
-                      ? "border-l-2 border-indigo-500 bg-indigo-500/10 pl-[10px] font-semibold text-indigo-400"
-                      : "border-l-2 border-transparent text-white/50 hover:bg-white/5 hover:text-white/80"
+                      ? "border-indigo-500 bg-indigo-500/10 font-semibold text-indigo-600 dark:text-indigo-400"
+                      : "border-transparent text-text-muted hover:bg-bg-elevated hover:text-text-primary"
                   )}
                 >
-                  <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-                  {!collapsed && <span>{label}</span>}
+                  <Icon
+                    className="h-[18px] w-[18px] shrink-0"
+                    strokeWidth={1.5}
+                    aria-hidden
+                  />
+                  {!collapsed && (
+                    <span className="text-[15px] font-medium leading-none">
+                      {label}
+                    </span>
+                  )}
                 </Link>
               </li>
             );
@@ -107,16 +111,16 @@ function SidebarPanel({
       </nav>
 
       {user && !collapsed && (
-        <div className="border-t border-[#1f2d45] p-4">
-          <div className="flex items-center gap-3">
+        <div className="border-t border-border p-4">
+          <div className="flex items-center gap-3 px-1">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
               {getInitials(user.name)}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white/80">
+              <p className="truncate text-sm font-medium text-text-secondary">
                 {user.name}
               </p>
-              <p className="truncate text-xs text-white/30">{user.email}</p>
+              <p className="truncate text-xs text-text-muted">{user.email}</p>
             </div>
           </div>
         </div>
