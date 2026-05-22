@@ -5,7 +5,8 @@ import axios, {
 } from "axios";
 import { appToast } from "@/lib/toast";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 export interface ApiErrorBody {
   success: false;
