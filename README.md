@@ -14,8 +14,8 @@
 
 ## Live Demo
 
-- **Frontend:** [your Vercel URL]
-- **Backend:** [your Railway/Render URL]
+- **Frontend:** https://project-taskflow-three.vercel.app
+- **Backend:** https://project-taskflow-production.up.railway.app/health
 - **Test credentials:** email: demo@taskflow.com / password: Demo@1234
 
 ---
