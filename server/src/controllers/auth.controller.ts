@@ -48,6 +48,7 @@ export async function register(
 
     res.status(201).json({
       success: true,
+      token,
       data: { user: toPublicUser(user) },
     });
   } catch (error) {
@@ -79,6 +80,7 @@ export async function login(
 
     res.json({
       success: true,
+      token,
       data: { user: toPublicUser(user) },
     });
   } catch (error) {
@@ -154,6 +156,7 @@ export async function updateProfile(
 
     res.json({
       success: true,
+      token,
       data: { user: toPublicUser(user) },
     });
   } catch (error) {

@@ -1,4 +1,4 @@
-import type { NextFunction, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { AuthRequest } from "../types/index.js";
 import { AppError } from "./errorHandler.js";
@@ -17,6 +17,20 @@ function getJwtSecret(): string {
     throw new Error("JWT_SECRET is not defined in environment variables");
   }
   return secret;
+}
+
+export function getToken(req: Request): string | null {
+  const cookieToken = req.cookies?.[COOKIE_NAME] as string | undefined;
+  if (cookieToken) {
+    return cookieToken;
+  }
+
+  const authHeader = req.headers.authorization;
+  if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim();
+  }
+
+  return null;
 }
 
 export function signToken(payload: JwtPayload): string {
@@ -48,7 +62,7 @@ export function authenticate(
   next: NextFunction
 ): void {
   try {
-    const token = req.cookies?.[COOKIE_NAME] as string | undefined;
+    const token = getToken(req);
 
     if (!token) {
       next(new AppError("Authentication required", 401));

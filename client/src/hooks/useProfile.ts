@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { put } from "@/lib/axios";
 import { getErrorMessage } from "@/lib/errors";
+import { tokenStore } from "@/lib/tokenStore";
 import type { ApiResponse, AuthResponse } from "@/types";
 
 interface UpdateProfileInput {
@@ -27,6 +28,9 @@ export function useProfile() {
         "/api/auth/profile",
         input
       );
+      if (data.token) {
+        tokenStore.set(data.token);
+      }
       return data;
     } catch (err) {
       const message = getErrorMessage(err);

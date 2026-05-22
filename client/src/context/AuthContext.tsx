@@ -15,6 +15,7 @@ import {
   post,
   registerSessionExpiredHandler,
 } from "@/lib/axios";
+import { tokenStore } from "@/lib/tokenStore";
 import type {
   ApiResponse,
   AuthResponse,
@@ -45,14 +46,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const clearUser = useCallback(() => {
+  const clearSession = useCallback(() => {
+    tokenStore.clear();
     setUser(null);
   }, []);
 
   useEffect(() => {
-    registerSessionExpiredHandler(clearUser);
+    registerSessionExpiredHandler(clearSession);
     return () => registerSessionExpiredHandler(null);
-  }, [clearUser]);
+  }, [clearSession]);
 
   useEffect(() => {
     void (async () => {
@@ -61,12 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await get<ApiResponse<AuthResponse>>("/api/auth/me");
         setUser(data.data?.user ?? null);
       } catch {
-        setUser(null);
+        clearSession();
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [clearSession]);
 
   const login = useCallback(
     async (input: LoginInput, options?: AuthOptions) => {
@@ -74,6 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         "/api/auth/login",
         input
       );
+      if (data.token) {
+        tokenStore.set(data.token);
+      }
       setUser(data.data?.user ?? null);
       if (options?.redirect !== false) {
         router.push("/dashboard");
@@ -88,6 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         "/api/auth/register",
         input
       );
+      if (data.token) {
+        tokenStore.set(data.token);
+      }
       setUser(data.data?.user ?? null);
       if (options?.redirect !== false) {
         router.push("/dashboard");
@@ -102,10 +110,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       /* Logout still clears local session if the server is unreachable */
     } finally {
-      setUser(null);
+      clearSession();
       router.push("/login");
     }
-  }, [router]);
+  }, [router, clearSession]);
 
   const updateUser = useCallback((next: User) => {
     setUser(next);
@@ -116,13 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await get<ApiResponse<AuthResponse>>("/api/auth/me");
       setUser(data.data?.user ?? null);
     } catch {
-      setUser(null);
+      clearSession();
     }
-  }, []);
-
-  const clearSession = useCallback(() => {
-    setUser(null);
-  }, []);
+  }, [clearSession]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

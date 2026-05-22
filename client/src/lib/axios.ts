@@ -4,6 +4,7 @@ import axios, {
   type AxiosResponse,
 } from "axios";
 import { appToast } from "@/lib/toast";
+import { tokenStore } from "@/lib/tokenStore";
 import {
   type ApiErrorBody,
   getErrorMessage,
@@ -33,15 +34,28 @@ export const api = axios.create({
   },
 });
 
-api.interceptors.request.use((config) => config);
+api.interceptors.request.use((config) => {
+  const token = tokenStore.get();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorBody>) => {
     const status = error.response?.status;
+    const errorCode = error.response?.data?.errorCode;
     const requestUrl = error.config?.url ?? "";
 
-    if (status === 401 && typeof window !== "undefined") {
+    const sessionExpired =
+      status === 401 ||
+      errorCode === "SESSION_EXPIRED";
+
+    if (sessionExpired && typeof window !== "undefined") {
+      tokenStore.clear();
+
       if (isAuthRequestUrl(requestUrl) || isSilentAuthUrl(requestUrl)) {
         return Promise.reject(error);
       }
