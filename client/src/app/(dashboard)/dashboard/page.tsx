@@ -31,8 +31,23 @@ import type { ITask, TaskStatus } from "@/types";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { stats, isLoading: statsLoading, error: statsError, refetch } =
-    useTaskStats();
+  const {
+    stats,
+    isLoading: statsLoading,
+    error: statsError,
+    justPolled,
+    refetch,
+  } = useTaskStats();
+
+  const totalTrend =
+    stats.createdToday > 0
+      ? `+ ${stats.createdToday} today`
+      : "No new tasks today";
+  const completedTrend =
+    stats.completedToday > 0
+      ? `+ ${stats.completedToday} today`
+      : "None today";
+  const pollTrend = justPolled ? "Updated just now" : undefined;
   const {
     activity,
     isLoading: activityLoading,
@@ -150,16 +165,16 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-text-primary">
           {greeting}
         </h1>
-        <p className="mt-1 text-sm leading-6 text-text-secondary">
+        <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-text-secondary">
           Here&apos;s what&apos;s happening with your tasks today.
         </p>
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-text-primary">
+        <h2 className="text-lg font-semibold tracking-tight text-slate-800 dark:text-text-primary">
           Overview
         </h2>
         <motion.div
@@ -174,6 +189,7 @@ export default function DashboardPage() {
               value={stats.total}
               icon={ListTodo}
               variant="indigo"
+              trend={totalTrend}
               isLoading={statsLoading}
               error={statsSharedError}
               onRetry={refetch}
@@ -186,6 +202,7 @@ export default function DashboardPage() {
               value={stats.completed}
               icon={CheckCircle2}
               variant="emerald"
+              trend={completedTrend}
               isLoading={statsLoading}
               error={statsSharedError}
               onRetry={refetch}
@@ -197,6 +214,7 @@ export default function DashboardPage() {
               value={stats.pending}
               icon={Circle}
               variant="amber"
+              trend={pollTrend}
               isLoading={statsLoading}
               error={statsSharedError}
               onRetry={refetch}
@@ -208,6 +226,7 @@ export default function DashboardPage() {
               value={stats.inProgress}
               icon={Clock}
               variant="violet"
+              trend={pollTrend}
               isLoading={statsLoading}
               error={statsSharedError}
               onRetry={refetch}

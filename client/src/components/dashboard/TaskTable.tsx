@@ -189,32 +189,32 @@ export const TaskTable = memo(function TaskTable({
       </motion.div>
 
       {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-bg-surface shadow-sm lg:block">
+      <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-border dark:bg-bg-surface lg:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left text-sm">
-            <thead className="border-b border-border bg-bg-elevated/80">
+            <thead className="border-b border-slate-100 bg-slate-50 dark:border-border dark:bg-bg-elevated/80">
               <tr>
-                <th className="px-4 py-3 text-label font-medium normal-case tracking-widest">
+                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
                   Title
                 </th>
-                <th className="px-4 py-3 text-label font-medium normal-case tracking-widest">
+                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
                   Priority
                 </th>
-                <th className="px-4 py-3 text-label font-medium normal-case tracking-widest">
+                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
                   Status
                 </th>
-                <th className="px-4 py-3 text-label font-medium normal-case tracking-widest">
+                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
                   Due Date
                 </th>
-                <th className="px-4 py-3 text-label font-medium normal-case tracking-widest">
+                <th className="px-4 py-3 text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
                   Created
                 </th>
-                <th className="px-4 py-3 text-right text-label font-medium normal-case tracking-widest">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-widest text-slate-500 uppercase dark:text-text-muted">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-slate-100 dark:divide-border">
               {tasks.map((task) => {
                 const overdue = isTaskOverdue(task.dueDate, task.status);
                 const isUpdating = isUpdatingId === task._id;
@@ -224,12 +224,12 @@ export const TaskTable = memo(function TaskTable({
                     key={task._id}
                     variants={staggerItem}
                     className={cn(
-                      "transition-colors hover:bg-bg-elevated",
+                      "transition-colors hover:bg-slate-50 dark:hover:bg-bg-elevated",
                       overdue && "border-l-4 border-l-danger-500"
                     )}
                   >
                     <td className="px-4 py-3">
-                      <p className="font-medium text-text-primary">
+                      <p className="font-medium text-slate-800 dark:text-text-primary">
                         {task.title}
                       </p>
                       {task.description && (

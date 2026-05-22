@@ -28,7 +28,7 @@ export const RecentActivity = memo(function RecentActivity({
   }
 
   return (
-    <section className="rounded-xl border border-border bg-bg-surface p-6 shadow-sm">
+    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-border dark:bg-bg-surface">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-heading-3">Recent Activity</h2>
         <button

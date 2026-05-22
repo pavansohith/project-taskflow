@@ -27,6 +27,16 @@ export interface LoginBody {
   password: string;
 }
 
+export interface UpdateProfileBody {
+  name: string;
+}
+
+export interface UpdatePasswordBody {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface CreateTaskBody {
   title: string;
   description?: string;

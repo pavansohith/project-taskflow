@@ -37,6 +37,14 @@ function buildOwnerFilter(ownerId: string): FilterQuery<TaskDocument> {
   return { owner: new mongoose.Types.ObjectId(ownerId) };
 }
 
+/** Start of current calendar day in UTC (00:00:00.000 UTC). */
+function getStartOfTodayUTC(): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0)
+  );
+}
+
 export async function getTasks(
   req: AuthRequest,
   res: Response,
@@ -63,7 +71,7 @@ export async function getTasks(
     }
 
     const safePage = Math.max(1, Number(page) || 1);
-    const safeLimit = Math.min(100, Math.max(1, Number(limit) || 10));
+    const safeLimit = Math.min(1000, Math.max(1, Number(limit) || 10));
     const skip = (safePage - 1) * safeLimit;
 
     const [tasks, total] = await Promise.all([
@@ -122,16 +130,38 @@ export async function getTaskStats(
     const ownerId = getOwnerId(req);
     const filter = buildOwnerFilter(ownerId);
 
-    const [total, completed, pending, inProgress] = await Promise.all([
+    const startOfToday = getStartOfTodayUTC();
+
+    const [
+      total,
+      completed,
+      pending,
+      inProgress,
+      createdToday,
+      completedToday,
+    ] = await Promise.all([
       Task.countDocuments(filter),
       Task.countDocuments({ ...filter, status: "Completed" }),
       Task.countDocuments({ ...filter, status: "Todo" }),
       Task.countDocuments({ ...filter, status: "In Progress" }),
+      Task.countDocuments({ ...filter, createdAt: { $gte: startOfToday } }),
+      Task.countDocuments({
+        ...filter,
+        status: "Completed",
+        updatedAt: { $gte: startOfToday },
+      }),
     ]);
 
     res.json({
       success: true,
-      data: { total, completed, pending, inProgress },
+      data: {
+        total,
+        completed,
+        pending,
+        inProgress,
+        createdToday,
+        completedToday,
+      },
     });
   } catch (error) {
     next(error);

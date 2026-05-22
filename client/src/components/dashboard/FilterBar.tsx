@@ -47,7 +47,7 @@ function FilterPill({
       onClick={onClick}
       className={cn(
         "min-h-11 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
-        "border border-border bg-bg-surface text-text-secondary hover:bg-bg-elevated",
+        "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-border dark:bg-bg-surface dark:text-text-secondary dark:hover:bg-bg-elevated",
         active && "border-transparent shadow-sm",
         active && (activeClassName ?? "bg-primary-600 text-white")
       )}
@@ -136,7 +136,7 @@ export const FilterBar = memo(function FilterBar({
   );
 
   return (
-    <div className="mb-4 space-y-4 rounded-xl border border-border bg-bg-surface p-4 shadow-sm">
+    <div className="mb-4 space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-bg-surface">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:gap-4">
         <div className="relative w-full sm:max-w-none lg:w-[280px]">
           <Search
@@ -149,8 +149,8 @@ export const FilterBar = memo(function FilterBar({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search tasks..."
             className={cn(
-              "h-11 w-full rounded-lg border border-border bg-bg-surface py-2 pl-9 pr-10 text-sm text-text-primary placeholder:text-text-muted transition-ring",
-              "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+              "h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-10 text-sm text-slate-900 placeholder:text-slate-400 transition-ring dark:border-border dark:bg-bg-surface dark:text-text-primary dark:placeholder:text-text-muted",
+              "focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:focus:border-primary-500 dark:focus:ring-primary-500/50"
             )}
             aria-label="Search tasks"
           />

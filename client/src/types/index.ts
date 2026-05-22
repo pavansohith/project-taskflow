@@ -10,6 +10,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Task {
@@ -32,6 +34,8 @@ export interface TaskStats {
   completed: number;
   pending: number;
   inProgress: number;
+  createdToday: number;
+  completedToday: number;
 }
 
 export interface TaskActivityItem {

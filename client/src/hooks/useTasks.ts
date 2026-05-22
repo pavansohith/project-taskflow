@@ -14,6 +14,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { useVisibilityPolling } from "@/hooks/useVisibilityPolling";
 import { useAuth } from "@/context/AuthContext";
+import { getTasksPerPage } from "@/lib/preferences";
 import type {
   ApiResponse,
   CreateTaskInput,
@@ -24,7 +25,6 @@ import type {
   UpdateTaskInput,
 } from "@/types";
 
-const PAGE_LIMIT = 10;
 const POLL_INTERVAL_MS = 30_000;
 const MAX_FETCH_ATTEMPTS = 2;
 
@@ -75,8 +75,21 @@ export function useTasks() {
     useState<TaskFilterStatus>("all");
   const [priorityFilter, setPriorityFilterState] =
     useState<TaskFilterPriority>("all");
+  const [pageLimit, setPageLimit] = useState(() =>
+    typeof window !== "undefined" ? getTasksPerPage() : 10
+  );
 
   const debouncedSearch = useDebounce(search, 400);
+
+  useEffect(() => {
+    const onSettingsChange = () => {
+      setPageLimit(getTasksPerPage());
+      setCurrentPage(1);
+    };
+    window.addEventListener("taskflow-settings-change", onSettingsChange);
+    return () =>
+      window.removeEventListener("taskflow-settings-change", onSettingsChange);
+  }, []);
 
   const fetchTasks = useCallback(
     async (silent = false) => {
@@ -103,7 +116,7 @@ export function useTasks() {
             params.set("priority", priorityFilter);
           }
           params.set("page", String(currentPage));
-          params.set("limit", String(PAGE_LIMIT));
+          params.set("limit", String(pageLimit));
 
           const data = await get<PaginatedTasksResponse>(
             `/api/tasks?${params.toString()}`
@@ -191,6 +204,7 @@ export function useTasks() {
       statusFilter,
       priorityFilter,
       currentPage,
+      pageLimit,
     ]
   );
 

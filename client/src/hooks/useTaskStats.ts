@@ -11,6 +11,8 @@ const DEFAULT_STATS: TaskStats = {
   completed: 0,
   pending: 0,
   inProgress: 0,
+  createdToday: 0,
+  completedToday: 0,
 };
 
 const POLL_INTERVAL_MS = 30_000;
@@ -20,6 +22,7 @@ export function useTaskStats() {
   const [stats, setStats] = useState<TaskStats>(DEFAULT_STATS);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [justPolled, setJustPolled] = useState(false);
 
   const fetchStats = useCallback(
     async (silent = false) => {
@@ -32,6 +35,9 @@ export function useTaskStats() {
         const data = await get<ApiResponse<TaskStats>>("/api/tasks/stats");
         if (data.data) {
           setStats(data.data);
+        }
+        if (silent) {
+          setJustPolled(true);
         }
       } catch (err) {
         setError(getErrorMessage(err));
@@ -58,5 +64,17 @@ export function useTaskStats() {
     isAuthenticated
   );
 
-  return { stats, isLoading, error, refetch: () => fetchStats() };
+  useEffect(() => {
+    if (!justPolled) return;
+    const timer = window.setTimeout(() => setJustPolled(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [justPolled]);
+
+  return {
+    stats,
+    isLoading,
+    error,
+    justPolled,
+    refetch: () => fetchStats(),
+  };
 }

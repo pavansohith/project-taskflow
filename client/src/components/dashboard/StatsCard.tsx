@@ -45,7 +45,7 @@ export const StatsCard = memo(function StatsCard({
   value,
   icon: Icon,
   variant = "indigo",
-  trend = "+2 today",
+  trend,
   isLoading = false,
   error = null,
   onRetry,
@@ -54,6 +54,7 @@ export const StatsCard = memo(function StatsCard({
 }: StatsCardProps) {
   const styles = variantStyles[variant];
   const showError = !isLoading && error;
+  const showTrend = !showError && trend && trend.length > 0;
 
   if (isLoading) {
     return <StatsCardSkeleton className={className} />;
@@ -62,7 +63,7 @@ export const StatsCard = memo(function StatsCard({
   return (
     <div
       className={cn(
-        "relative overflow-visible rounded-xl border border-border bg-bg-surface p-5 shadow-sm transition-all duration-200",
+        "relative overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 dark:border-border dark:bg-bg-surface",
         "hover:-translate-y-0.5 hover:shadow-md",
         celebrate && "animate-stat-celebrate",
         className
@@ -70,10 +71,16 @@ export const StatsCard = memo(function StatsCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-label">{title}</p>
-          <p className="text-stat mt-2">{showError ? "—" : value}</p>
-          {!showError && (
-            <p className="mt-1 text-xs text-text-muted">{trend}</p>
+          <p className="text-xs font-semibold tracking-widest text-slate-500 uppercase dark:text-text-muted">
+            {title}
+          </p>
+          <p className="mt-2 text-4xl font-bold tracking-tight text-slate-900 tabular-nums dark:text-text-primary">
+            {showError ? "—" : value}
+          </p>
+          {showTrend && (
+            <p className="mt-1 text-xs text-slate-500 dark:text-text-muted">
+              {trend}
+            </p>
           )}
           {showError && (
             <div className="mt-2 flex flex-col gap-2">

@@ -58,7 +58,7 @@ export default function RegisterPage() {
         variants={fadeInUp}
         initial="initial"
         animate="animate"
-        className="w-full max-w-md rounded-2xl border border-border bg-bg-surface p-8 shadow-xl"
+        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-border dark:bg-bg-surface"
       >
         <div className="mb-8">
           <h1 className="text-heading-2">Create account</h1>

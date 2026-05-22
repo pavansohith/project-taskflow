@@ -33,7 +33,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             type={showPassword ? "text" : "password"}
             disabled={disabled}
             className={cn(
-              "h-11 w-full rounded-lg border border-border bg-bg-surface py-2 pl-3 pr-11 text-sm text-text-primary placeholder:text-text-muted transition-ring",
+              "h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-11 text-sm text-slate-900 placeholder:text-slate-400 transition-ring dark:border-border dark:bg-bg-surface dark:text-text-primary dark:placeholder:text-text-muted",
               "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50",
               "disabled:cursor-not-allowed disabled:opacity-50",
               error &&

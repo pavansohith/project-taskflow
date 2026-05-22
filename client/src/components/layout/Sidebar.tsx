@@ -7,10 +7,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckSquare,
   LayoutDashboard,
-  ListTodo,
   LogOut,
   PanelLeftClose,
-  Users,
+  Settings,
+  User,
 } from "lucide-react";
 import { appToast } from "@/lib/toast";
 import { fadeOverlay, slideInRight } from "@/lib/motion";
@@ -19,8 +19,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard", label: "Tasks", icon: ListTodo },
-  { href: "#", label: "Team", icon: Users, disabled: true },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -59,7 +59,7 @@ function SidebarPanel({
   return (
     <aside
       className={cn(
-        "flex h-full flex-col border-r border-border bg-bg-surface transition-[width] duration-300 ease-out",
+        "flex h-full flex-col border-r border-slate-200 bg-white transition-[width] duration-300 ease-out dark:border-border dark:bg-bg-surface",
         collapsed ? "w-[72px]" : "w-60"
       )}
     >
@@ -77,24 +77,20 @@ function SidebarPanel({
       )}
 
       <nav className="flex flex-1 flex-col gap-1 p-3">
-        {navItems.map(({ href, label, icon: Icon, disabled }) => {
-          const isActive = !disabled && pathname === href;
+        {navItems.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={label}
-              href={disabled ? "#" : href}
-              onClick={(e) => {
-                if (disabled) e.preventDefault();
-                else onMobileClose?.();
-              }}
+              href={href}
+              onClick={() => onMobileClose?.()}
               title={collapsed ? label : undefined}
               className={cn(
                 "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors",
                 collapsed && "justify-center px-2",
-                disabled && "cursor-not-allowed opacity-50",
                 isActive
-                  ? "bg-primary-100 font-semibold text-primary-700 dark:bg-primary-900/40 dark:text-primary-200"
-                  : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary"
+                  ? "bg-indigo-50 font-semibold text-indigo-700 dark:bg-primary-900/40 dark:text-primary-200"
+                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:text-text-secondary dark:hover:bg-bg-elevated dark:hover:text-text-primary"
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />

@@ -54,14 +54,14 @@
   --slate-950: #020617;
 
   /* ─── Light theme surfaces & text ─── */
-  --bg-base: #f8fafc;
+  --bg-base: #f1f5f9;
   --bg-surface: #ffffff;
-  --bg-elevated: #f1f5f9;
-  --border: #e2e8f0;
+  --bg-elevated: #f8fafc;
+  --border: #cbd5e1;
   --border-subtle: #f1f5f9;
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
   --text-inverse: #f8fafc;
 
   /* Focus & overlays */

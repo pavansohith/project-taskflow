@@ -12,6 +12,7 @@ import { ToggleButtonGroup } from "@/components/ui/ToggleButtonGroup";
 import { fadeOverlay, scaleIn } from "@/lib/motion";
 import { getErrorMessage } from "@/lib/axios";
 import { taskSchema, type TaskFormValues } from "@/lib/validators";
+import { getDefaultPriority } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
 import type {
   CreateTaskInput,
@@ -96,7 +97,7 @@ function getDefaultValues(task?: ITask): TaskFormValues {
   return {
     title: task?.title ?? "",
     description: task?.description ?? "",
-    priority: (task?.priority ?? "Medium") as TaskPriority,
+    priority: (task?.priority ?? getDefaultPriority()) as TaskPriority,
     status: (task?.status ?? "Todo") as TaskStatus,
     dueDate: toDateInputValue(task?.dueDate),
   };

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
@@ -39,10 +40,17 @@ export function Navbar({
   onToggleCollapse,
   collapsed = false,
 }: NavbarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMenuOpen(false), 0);
+    return () => window.clearTimeout(timer);
+  }, [pathname]);
 
   useEffect(() => {
     const main = document.querySelector("[data-dashboard-main]");
@@ -73,8 +81,7 @@ export function Navbar({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-border px-4 transition-shadow duration-300 lg:px-6",
-        "bg-surface-glass",
+        "sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 transition-shadow duration-300 dark:border-border dark:bg-surface-glass lg:px-6",
         scrolled && "shadow-md"
       )}
     >
@@ -103,9 +110,9 @@ export function Navbar({
         )}
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 font-semibold text-text-primary"
+          className="flex items-center gap-2 font-semibold text-slate-800 dark:text-text-primary"
         >
-          <LayoutDashboard className="h-5 w-5 text-primary-600" />
+          <LayoutDashboard className="h-5 w-5 text-indigo-600 dark:text-primary-600" />
           <span>TaskFlow</span>
         </Link>
       </div>
@@ -133,7 +140,7 @@ export function Navbar({
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 dark:bg-primary-900/50 dark:text-primary-200">
                 {getInitials(user.name)}
               </div>
-              <span className="hidden max-w-[120px] truncate text-sm font-medium text-text-primary sm:inline">
+              <span className="hidden max-w-[120px] truncate text-sm font-medium text-slate-800 dark:text-text-primary sm:inline">
                 {user.name}
               </span>
               <ChevronDown
@@ -151,26 +158,40 @@ export function Navbar({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-bg-surface py-1 shadow-lg"
+                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-border dark:bg-bg-surface"
                   role="menu"
                 >
+                  <div className="border-b border-slate-100 px-4 py-3 dark:border-border">
+                    <p className="truncate text-sm font-medium text-slate-800 dark:text-text-primary">
+                      {user.name}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-text-muted">
+                      {user.email}
+                    </p>
+                  </div>
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-elevated"
-                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-text-secondary dark:hover:bg-bg-elevated"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      router.push("/profile");
+                    }}
                   >
                     <User className="h-4 w-4" />
-                    Profile
+                    View Profile
                   </button>
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-elevated"
-                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-text-secondary dark:hover:bg-bg-elevated"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      router.push("/settings");
+                    }}
                   >
                     <Settings className="h-4 w-4" />
                     Settings
                   </button>
-                  <hr className="my-1 border-border" />
+                  <hr className="my-1 border-slate-200 dark:border-border" />
                   <button
                     type="button"
                     className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-500/10"
